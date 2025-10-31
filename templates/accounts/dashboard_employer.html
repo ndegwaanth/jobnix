@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employer Dashboard - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dashboard-employer">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item active">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'jobs:job_create' %}" class="nav-item">
+                <i class="fas fa-plus-circle"></i>
+                <span>Post Job</span>
+            </a>
+            <a href="{% url 'jobs:job_list' %}" class="nav-item">
+                <i class="fas fa-briefcase"></i>
+                <span>My Jobs</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Candidates</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Applications</span>
+            </a>
+            <a href="{% url 'analytics:user_analytics' %}" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="{% url 'accounts:profile' %}" class="nav-item">
+                <i class="fas fa-building"></i>
+                <span>Company Profile</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>{{ user.employer_profile.company_name|default:"Company Dashboard" }}</h1>
+                <p>Manage your recruitment and hiring</p>
+            </div>
+            <div class="topbar-right">
+                <div class="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">12</span>
+                </div>
+                <div class="user-menu">
+                    <img src="https://ui-avatars.com/api/?name={{ user.employer_profile.company_name|default:user.username }}&background=ec4899&color=fff" alt="Company" class="avatar">
+                    <span>{{ user.first_name|default:user.username }}</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-grid">
+            <!-- Stats Cards -->
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>15</h3>
+                    <p>Active Jobs</p>
+                    <span class="stat-change positive">+3 this month</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>248</h3>
+                    <p>Total Applications</p>
+                    <span class="stat-change positive">+45 this week</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>32</h3>
+                    <p>Candidates Hired</p>
+                    <span class="stat-change positive">12% increase</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>18</h3>
+                    <p>Pending Reviews</p>
+                    <span class="stat-change">Needs attention</span>
+                </div>
+            </div>
+
+            <!-- Recent Applications -->
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-users"></i> Recent Applications</h2>
+                    <a href="#" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="applications-list">
+                    <div class="application-item">
+                        <div class="applicant-info">
+                            <div class="applicant-avatar">JD</div>
+                            <div class="applicant-details">
+                                <h3>John Doe</h3>
+                                <p>Software Developer Position</p>
+                                <span class="application-meta">Applied 2 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="application-actions">
+                            <div class="match-score">92% Match</div>
+                            <button class="btn-view">View Profile</button>
+                        </div>
+                    </div>
+                    <div class="application-item">
+                        <div class="applicant-info">
+                            <div class="applicant-avatar">JS</div>
+                            <div class="applicant-details">
+                                <h3>Jane Smith</h3>
+                                <p>Data Scientist Position</p>
+                                <span class="application-meta">Applied 5 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="application-actions">
+                            <div class="match-score">89% Match</div>
+                            <button class="btn-view">View Profile</button>
+                        </div>
+                    </div>
+                    <div class="application-item">
+                        <div class="applicant-info">
+                            <div class="applicant-avatar">MJ</div>
+                            <div class="applicant-details">
+                                <h3>Mike Johnson</h3>
+                                <p>Frontend Developer Position</p>
+                                <span class="application-meta">Applied 1 day ago</span>
+                            </div>
+                        </div>
+                        <div class="application-actions">
+                            <div class="match-score">85% Match</div>
+                            <button class="btn-view">View Profile</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+                </div>
+                <div class="quick-actions">
+                    <a href="{% url 'jobs:job_create' %}" class="action-btn">
+                        <i class="fas fa-plus"></i>
+                        <span>Post New Job</span>
+                    </a>
+                    <a href="#" class="action-btn">
+                        <i class="fas fa-search"></i>
+                        <span>Search Candidates</span>
+                    </a>
+                    <a href="{% url 'analytics:user_analytics' %}" class="action-btn">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>View Analytics</span>
+                    </a>
+                    <a href="{% url 'accounts:profile' %}" class="action-btn">
+                        <i class="fas fa-building"></i>
+                        <span>Company Settings</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Hiring Pipeline -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-sitemap"></i> Hiring Pipeline</h2>
+                </div>
+                <div class="pipeline-stats">
+                    <div class="pipeline-item">
+                        <div class="pipeline-number">45</div>
+                        <div class="pipeline-label">New</div>
+                    </div>
+                    <div class="pipeline-item">
+                        <div class="pipeline-number">28</div>
+                        <div class="pipeline-label">Screening</div>
+                    </div>
+                    <div class="pipeline-item">
+                        <div class="pipeline-number">15</div>
+                        <div class="pipeline-label">Interview</div>
+                    </div>
+                    <div class="pipeline-item">
+                        <div class="pipeline-number">8</div>
+                        <div class="pipeline-label">Offer</div>
+                    </div>
+                    <div class="pipeline-item">
+                        <div class="pipeline-number">5</div>
+                        <div class="pipeline-label">Hired</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Performance -->
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-bar"></i> Job Performance</h2>
+                </div>
+                <div class="job-performance">
+                    <div class="performance-item">
+                        <div class="performance-header">
+                            <h4>Senior Software Engineer</h4>
+                            <span class="performance-views">1,245 views</span>
+                        </div>
+                        <div class="performance-stats">
+                            <div class="perf-stat">
+                                <span class="perf-value">156</span>
+                                <span class="perf-label">Applications</span>
+                            </div>
+                            <div class="perf-stat">
+                                <span class="perf-value">12</span>
+                                <span class="perf-label">Shortlisted</span>
+                            </div>
+                            <div class="perf-stat">
+                                <span class="perf-value">3</span>
+                                <span class="perf-label">Interviews</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="performance-item">
+                        <div class="performance-header">
+                            <h4>Data Scientist</h4>
+                            <span class="performance-views">892 views</span>
+                        </div>
+                        <div class="performance-stats">
+                            <div class="perf-stat">
+                                <span class="perf-value">89</span>
+                                <span class="perf-label">Applications</span>
+                            </div>
+                            <div class="perf-stat">
+                                <span class="perf-value">8</span>
+                                <span class="perf-label">Shortlisted</span>
+                            </div>
+                            <div class="perf-stat">
+                                <span class="perf-value">2</span>
+                                <span class="perf-label">Interviews</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="{% static 'js/dashboard.js' %}"></script>
+</body>
+</html>
+

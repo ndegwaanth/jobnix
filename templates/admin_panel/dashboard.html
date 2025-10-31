@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+</head>
+<body class="dashboard-admin">
+    <!-- Sidebar -->
+    <aside class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>Job<span class="accent">Nix</span> Admin</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-item active">
+                <i class="fas fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin_panel:user_management' %}" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            <a href="{% url 'admin_panel:job_management' %}" class="nav-item">
+                <i class="fas fa-briefcase"></i>
+                <span>Jobs</span>
+            </a>
+            <a href="{% url 'analytics:platform_analytics' %}" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="/admin/" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Django Admin</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar admin-topbar">
+            <div class="topbar-left">
+                <h1>Admin Dashboard</h1>
+                <p>Platform Overview & Management</p>
+            </div>
+            <div class="topbar-right">
+                <div class="user-menu">
+                    <i class="fas fa-user-shield"></i>
+                    <span>{{ user.username }}</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-grid admin-grid">
+            <!-- Key Metrics -->
+            <div class="stat-card admin-stat large">
+                <div class="stat-icon admin-icon" style="background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_users }}</h3>
+                    <p>Total Users</p>
+                    <div class="stat-breakdown">
+                        <span>{{ stats.youth_users }} Youth</span>
+                        <span>{{ stats.employer_users }} Employers</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card admin-stat">
+                <div class="stat-icon admin-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.verified_users }}</h3>
+                    <p>Verified Users</p>
+                    <span class="stat-change positive">{{ stats.verified_users|floatformat:0|default:"0" }}% verified</span>
+                </div>
+            </div>
+
+            <div class="stat-card admin-stat">
+                <div class="stat-icon admin-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.pending_verifications }}</h3>
+                    <p>Pending Verifications</p>
+                    <span class="stat-change warning">Needs attention</span>
+                </div>
+            </div>
+
+            <div class="stat-card admin-stat">
+                <div class="stat-icon admin-icon" style="background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_jobs }}</h3>
+                    <p>Total Jobs</p>
+                    <span class="stat-change">Active listings</span>
+                </div>
+            </div>
+
+            <div class="stat-card admin-stat">
+                <div class="stat-icon admin-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_applications }}</h3>
+                    <p>Applications</p>
+                    <span class="stat-change">Total submitted</span>
+                </div>
+            </div>
+
+            <div class="stat-card admin-stat">
+                <div class="stat-icon admin-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_courses }}</h3>
+                    <p>Courses</p>
+                    <span class="stat-change">{{ stats.total_enrollments }} enrollments</span>
+                </div>
+            </div>
+
+            <!-- System Overview -->
+            <div class="dashboard-card admin-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-pie"></i> System Overview</h2>
+                </div>
+                <div class="system-overview">
+                    <div class="overview-item">
+                        <div class="overview-icon" style="background: rgba(99, 102, 241, 0.1);">
+                            <i class="fas fa-users" style="color: #6366f1;"></i>
+                        </div>
+                        <div class="overview-content">
+                            <h4>User Growth</h4>
+                            <p>{{ stats.total_users }} registered users</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 75%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="overview-icon" style="background: rgba(236, 72, 153, 0.1);">
+                            <i class="fas fa-briefcase" style="color: #ec4899;"></i>
+                        </div>
+                        <div class="overview-content">
+                            <h4>Job Postings</h4>
+                            <p>{{ stats.total_jobs }} active jobs</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 60%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="overview-icon" style="background: rgba(16, 185, 129, 0.1);">
+                            <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                        </div>
+                        <div class="overview-content">
+                            <h4>Verification Rate</h4>
+                            <p>{{ stats.verified_users }}/{{ stats.total_users }} verified</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 85%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="dashboard-card admin-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+                </div>
+                <div class="quick-actions admin-actions">
+                    <a href="{% url 'admin_panel:user_management' %}" class="action-btn admin-action">
+                        <i class="fas fa-user-cog"></i>
+                        <span>Manage Users</span>
+                    </a>
+                    <a href="{% url 'admin_panel:job_management' %}" class="action-btn admin-action">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Manage Jobs</span>
+                    </a>
+                    <a href="{% url 'analytics:platform_analytics' %}" class="action-btn admin-action">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>View Analytics</span>
+                    </a>
+                    <a href="/admin/" class="action-btn admin-action">
+                        <i class="fas fa-cog"></i>
+                        <span>Django Admin</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="dashboard-card admin-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-clock"></i> Recent Platform Activity</h2>
+                </div>
+                <div class="activity-list admin-activity">
+                    <div class="activity-item admin-activity-item">
+                        <div class="activity-icon success">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4>New User Registered</h4>
+                            <p>Job Seeker account created</p>
+                            <span class="activity-time">5 minutes ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item admin-activity-item">
+                        <div class="activity-icon info">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4>New Job Posted</h4>
+                            <p>Software Developer position</p>
+                            <span class="activity-time">1 hour ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item admin-activity-item">
+                        <div class="activity-icon warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4>Pending Verification</h4>
+                            <p>{{ stats.pending_verifications }} emails pending</p>
+                            <span class="activity-time">2 hours ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item admin-activity-item">
+                        <div class="activity-icon success">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4>Course Enrollment</h4>
+                            <p>New course enrollment registered</p>
+                            <span class="activity-time">3 hours ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="{% static 'js/dashboard.js' %}"></script>
+</body>
+</html>
+

@@ -3,9 +3,428 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta name="description" content="JobNix - Empowering youth by connecting education, training, and job opportunities">
+    <title>JobNix - Bridge the Gap Between Skills and Employment</title>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
 </head>
 <body>
-    <h1>Hello World!</h1>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-briefcase"></i>
+                <span class="brand-name">Job<span class="accent">Nix</span></span>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#features" class="nav-link">Features</a></li>
+                <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+                <li><a href="#testimonials" class="nav-link">Success Stories</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+                <li><a href="{% url 'accounts:login' %}" class="btn btn-outline">Sign In</a></li>
+                <li><a href="{% url 'accounts:register' %}" class="btn btn-primary">Get Started</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-background">
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-rocket"></i>
+                    <span>Empowering Youth • Transforming Futures</span>
+                </div>
+                <h1 class="hero-title">
+                    Bridge the Gap Between
+                    <span class="gradient-text">Skills and Employment</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Connect with education, training, and job opportunities all in one unified platform. 
+                    Join thousands of youth building their careers with JobNix.
+                </p>
+                <div class="hero-cta">
+                    <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-large">
+                        <span>Get Started Free</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <a href="{% url 'accounts:login' %}" class="btn btn-secondary btn-large">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Sign In</span>
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" data-target="50000">0</div>
+                        <div class="stat-label">Active Users</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-target="10000">0</div>
+                        <div class="stat-label">Jobs Available</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-target="5000">0</div>
+                        <div class="stat-label">Courses Offered</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-target="85">0</div>
+                        <div class="stat-label">% Placement Rate</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="floating-card card-1">
+                    <i class="fas fa-user-graduate"></i>
+                    <span>Job Seekers</span>
+                </div>
+                <div class="floating-card card-2">
+                    <i class="fas fa-building"></i>
+                    <span>Employers</span>
+                </div>
+                <div class="floating-card card-3">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Institutions</span>
+                </div>
+                <div class="dashboard-preview">
+                    <div class="dashboard-header"></div>
+                    <div class="dashboard-content">
+                        <div class="dashboard-item"></div>
+                        <div class="dashboard-item"></div>
+                        <div class="dashboard-item"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="mouse"></div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">Why Choose JobNix</div>
+                <h2 class="section-title">Everything You Need to Succeed</h2>
+                <p class="section-subtitle">A comprehensive platform designed to empower youth and bridge the employment gap</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card" data-aos="fade-up">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>AI-Powered Matching</h3>
+                    <p>Smart algorithms match your skills with the perfect job opportunities and recommend courses to boost your employability.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-delay="100">
+                    <div class="feature-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3>Education Integration</h3>
+                    <p>Access thousands of courses from verified training institutions. Track progress and earn certifications that employers trust.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-delay="200">
+                    <div class="feature-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <h3>Job Marketplace</h3>
+                    <p>Browse and apply for jobs from leading employers. Get matched based on your profile, skills, and career goals.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-delay="300">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Career Analytics</h3>
+                    <p>Track your progress, view application statistics, and get insights into the most in-demand skills in your field.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-delay="400">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Community Support</h3>
+                    <p>Connect with peers, mentors, and industry professionals. Join forums and get support throughout your career journey.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-delay="500">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Verified Profiles</h3>
+                    <p>All employers and institutions are verified. Your data is secure, and you can trust the opportunities you find.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- User Types Section -->
+    <section class="user-types">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">For Everyone</div>
+                <h2 class="section-title">Built for All Your Needs</h2>
+            </div>
+            <div class="user-types-grid">
+                <div class="user-type-card">
+                    <div class="user-icon job-seeker">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h3>Job Seekers & Youth</h3>
+                    <ul class="user-features">
+                        <li><i class="fas fa-check"></i> Create professional profiles</li>
+                        <li><i class="fas fa-check"></i> AI job recommendations</li>
+                        <li><i class="fas fa-check"></i> Enroll in training programs</li>
+                        <li><i class="fas fa-check"></i> Track application progress</li>
+                        <li><i class="fas fa-check"></i> Access career resources</li>
+                    </ul>
+                    <a href="{% url 'accounts:register' %}?role=youth" class="btn btn-outline">Join as Job Seeker</a>
+                </div>
+                <div class="user-type-card featured">
+                    <div class="featured-badge">Most Popular</div>
+                    <div class="user-icon employer">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3>Employers</h3>
+                    <ul class="user-features">
+                        <li><i class="fas fa-check"></i> Post job openings</li>
+                        <li><i class="fas fa-check"></i> AI candidate matching</li>
+                        <li><i class="fas fa-check"></i> Manage applications</li>
+                        <li><i class="fas fa-check"></i> View hiring analytics</li>
+                        <li><i class="fas fa-check"></i> Shortlist candidates</li>
+                    </ul>
+                    <a href="{% url 'accounts:register' %}?role=employer" class="btn btn-primary">Post Jobs Now</a>
+                </div>
+                <div class="user-type-card">
+                    <div class="user-icon institution">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h3>Training Institutions</h3>
+                    <ul class="user-features">
+                        <li><i class="fas fa-check"></i> Create & manage courses</li>
+                        <li><i class="fas fa-check"></i> Partner with employers</li>
+                        <li><i class="fas fa-check"></i> Track participant outcomes</li>
+                        <li><i class="fas fa-check"></i> Issue certifications</li>
+                        <li><i class="fas fa-check"></i> Job linkage programs</li>
+                    </ul>
+                    <a href="{% url 'accounts:register' %}?role=institution" class="btn btn-outline">Register Institution</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">Simple Process</div>
+                <h2 class="section-title">How JobNix Works</h2>
+            </div>
+            <div class="steps">
+                <div class="step-item">
+                    <div class="step-number">01</div>
+                    <div class="step-content">
+                        <h3>Create Your Profile</h3>
+                        <p>Sign up and build your profile with your skills, education, and career interests. Choose your role: Job Seeker, Employer, or Institution.</p>
+                    </div>
+                    <div class="step-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">02</div>
+                    <div class="step-content">
+                        <h3>Explore Opportunities</h3>
+                        <p>Browse jobs, courses, or candidates. Our AI engine learns your preferences and recommends the best matches for you.</p>
+                    </div>
+                    <div class="step-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">03</div>
+                    <div class="step-content">
+                        <h3>Take Action</h3>
+                        <p>Apply for jobs, enroll in training, or connect with candidates. Track your progress and get real-time updates.</p>
+                    </div>
+                    <div class="step-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">04</div>
+                    <div class="step-content">
+                        <h3>Grow & Succeed</h3>
+                        <p>Build your career with continuous learning, networking, and job placement. Access analytics to optimize your journey.</p>
+                    </div>
+                    <div class="step-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials" id="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">Success Stories</div>
+                <h2 class="section-title">What Our Users Say</h2>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-text">"JobNix helped me find my dream job within 3 months! The AI matching is incredibly accurate, and the training courses prepared me perfectly."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="author-info">
+                            <h4>Sarah Johnson</h4>
+                            <span>Software Developer</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-text">"As an employer, JobNix saves us so much time. The candidate matching feature is spot-on, and we've hired 15 amazing talents this year!"</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="author-info">
+                            <h4>Michael Chen</h4>
+                            <span>HR Director, TechCorp</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-text">"Our institution's partnership with JobNix has increased our students' employment rate by 40%. The platform is a game-changer!"</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="author-info">
+                            <h4>Dr. Emily Rodriguez</h4>
+                            <span>Training Institute Director</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Transform Your Career?</h2>
+                <p>Join thousands of youth who are already building their futures with JobNix</p>
+                <div class="cta-buttons">
+                    <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-large">Get Started Free</a>
+                    <a href="{% url 'accounts:login' %}" class="btn btn-secondary btn-large">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <i class="fas fa-briefcase"></i>
+                        <span class="brand-name">Job<span class="accent">Nix</span></span>
+                    </div>
+                    <p>Empowering youth by connecting education, training, and job opportunities in one unified platform.</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>For Job Seekers</h4>
+                    <ul>
+                        <li><a href="#">Browse Jobs</a></li>
+                        <li><a href="#">Find Courses</a></li>
+                        <li><a href="#">Career Resources</a></li>
+                        <li><a href="#">Success Stories</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>For Employers</h4>
+                    <ul>
+                        <li><a href="#">Post Jobs</a></li>
+                        <li><a href="#">Find Talent</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">Success Stories</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>For Institutions</h4>
+                    <ul>
+                        <li><a href="#">Partner With Us</a></li>
+                        <li><a href="#">Create Courses</a></li>
+                        <li><a href="#">Resources</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 JobNix. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/landing.js' %}"></script>
 </body>
 </html>

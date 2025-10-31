@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - JobNix</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <style>
+        .verification-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: var(--bg-secondary);
+        }
+        .verification-box {
+            background: white;
+            border-radius: 1rem;
+            padding: 3rem;
+            box-shadow: var(--shadow-xl);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        .verification-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+            font-size: 2rem;
+        }
+        .code-input-group {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.75rem;
+            margin: 2rem 0;
+        }
+        .code-input {
+            width: 100%;
+            padding: 1rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+        .code-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .resend-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .resend-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="verification-container">
+        <div class="verification-box">
+            <div class="verification-icon">
+                <i class="fas fa-envelope-open-text"></i>
+            </div>
+            <h1>Verify Your Email</h1>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+                We've sent a 6-digit verification code to<br>
+                <strong>{{ email }}</strong>
+            </p>
+            
+            {% if messages %}
+                <div class="alert-container">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <form method="POST" id="verificationForm">
+                {% csrf_token %}
+                <div class="code-input-group">
+                    <input type="text" class="code-input" maxlength="1" pattern="[0-9]" required>
+                    <input type="text" class="code-input" maxlength="1" pattern="[0-9]" required>
+                    <input type="text" class="code-input" maxlength="1" pattern="[0-9]" required>
+                    <input type="text" class="code-input" maxlength="1" pattern="[0-9]" required>
+                    <input type="text" class="code-input" maxlength="1" pattern="[0-9]" required>
+                    <input type="text" class="code-input" maxlength="1" pattern="[0-9]" required>
+                </div>
+                <input type="hidden" name="code" id="fullCode">
+                
+                <button type="submit" class="btn-login">
+                    <span>Verify Email</span>
+                    <i class="fas fa-check"></i>
+                </button>
+            </form>
+            
+            <p style="margin-top: 2rem; color: var(--text-secondary);">
+                Didn't receive the code?<br>
+                <a href="{% url 'accounts:resend_code' user.id %}" class="resend-link">
+                    <i class="fas fa-redo"></i> Resend Code
+                </a>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        const inputs = document.querySelectorAll('.code-input');
+        const fullCodeInput = document.getElementById('fullCode');
+        const form = document.getElementById('verificationForm');
+        
+        // Auto-focus and move to next input
+        inputs.forEach((input, index) => {
+            input.addEventListener('input', function(e) {
+                if (this.value.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+                updateFullCode();
+            });
+            
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && !this.value && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+            
+            input.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+                pasted.split('').forEach((char, i) => {
+                    if (inputs[i]) {
+                        inputs[i].value = char;
+                        if (i < inputs.length - 1) inputs[i + 1].focus();
+                    }
+                });
+                updateFullCode();
+            });
+        });
+        
+        function updateFullCode() {
+            const code = Array.from(inputs).map(input => input.value).join('');
+            fullCodeInput.value = code;
+        }
+        
+        form.addEventListener('submit', function(e) {
+            const code = fullCodeInput.value;
+            if (code.length !== 6) {
+                e.preventDefault();
+                alert('Please enter the complete 6-digit code');
+            }
+        });
+        
+        // Focus first input on load
+        inputs[0].focus();
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - JobNix</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+    <div class="login-container">
+        <!-- Background Animation -->
+        <div class="bg-animation">
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+
+        <div class="login-content">
+            <!-- Logo & Back to Home -->
+            <div class="login-header">
+                <a href="{% url 'landing' %}" class="back-link">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Home</span>
+                </a>
+                <div class="logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Job<span class="accent">Nix</span></span>
+                </div>
+            </div>
+
+            <!-- Role Selection Tabs -->
+            <div class="login-box">
+                <div class="login-header-section">
+                    <h1>Welcome Back</h1>
+                    <p class="subtitle">Sign in to continue to your account</p>
+                </div>
+
+                <div class="role-tabs">
+                    <button class="role-tab active" data-role="youth" onclick="switchRole('youth')">
+                        <i class="fas fa-user-graduate"></i>
+                        <span>Job Seeker</span>
+                    </button>
+                    <button class="role-tab" data-role="employer" onclick="switchRole('employer')">
+                        <i class="fas fa-building"></i>
+                        <span>Employer</span>
+                    </button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" method="POST" action="{% url 'accounts:login' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="role" id="userRole" value="youth">
+                    
+                    <div class="form-group">
+                        <label for="username">
+                            <i class="fas fa-user"></i> Username or Email
+                        </label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            placeholder="Enter your username or email"
+                            required
+                            autocomplete="username"
+                        >
+                        <span class="error-message"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">
+                            <i class="fas fa-lock"></i> Password
+                        </label>
+                        <div class="password-input">
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                placeholder="Enter your password"
+                                required
+                                autocomplete="current-password"
+                            >
+                            <button type="button" class="toggle-password" onclick="togglePassword()">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <span class="error-message"></span>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="remember-me">
+                            <input type="checkbox" name="remember" id="remember">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="#" class="forgot-password">Forgot Password?</a>
+                    </div>
+
+                    <!-- Error Messages -->
+                    {% if messages %}
+                        <div class="alert-container">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">
+                                    <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <button type="submit" class="btn-login" id="loginBtn">
+                        <span>Sign In</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+
+                <!-- Social Login (Optional) -->
+                <div class="social-divider">
+                    <span>Or continue with</span>
+                </div>
+
+                <div class="social-login">
+                    <button type="button" class="social-btn google" onclick="socialLogin('google')">
+                        <i class="fab fa-google"></i>
+                        <span>Google</span>
+                    </button>
+                    <button type="button" class="social-btn linkedin" onclick="socialLogin('linkedin')">
+                        <i class="fab fa-linkedin"></i>
+                        <span>LinkedIn</span>
+                    </button>
+                </div>
+
+                <p class="signup-link">
+                    Don't have an account? <a href="{% url 'accounts:register' %}">Sign Up</a>
+                </p>
+
+                <div class="admin-link">
+                    <a href="{% url 'admin:login' %}">
+                        <i class="fas fa-shield-alt"></i>
+                        Admin Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/login.js' %}"></script>
+</body>
+</html>
+
