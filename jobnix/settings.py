@@ -87,36 +87,36 @@ WSGI_APPLICATION = 'jobnix.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'jobnix'),
-        'USER': os.getenv('DB_USER', 'jobnix'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'sucess'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '3306'),
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            'charset': 'utf8mb4',
-        },
+        'NAME': os.getenv("DB_NAME", "jobnix"),
+        'USER': os.getenv("DB_USER", "jobnix"),
+        'PASSWORD': os.getenv("DB_PASSWORD", "sucess"),
+        'HOST': os.getenv("DB_HOST", "localhost"),
+        'PORT': os.getenv("DB_PORT", "3306"),
     }
 }
 
+
+
 # Fallback to SQLite if MySQL drivers are not available
-try:
-    import mysqlclient  # Try mysqlclient first (recommended)
-except ImportError:
-    try:
-        import pymysql  # Fallback to pymysql (easier to install on Windows)
-        pymysql.install_as_MySQLdb()
-    except ImportError:
-        # Final fallback to SQLite
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / 'db.sqlite3',
-            }
-        }
+# try:
+#     import mysqlclient
+# except ImportError:
+#     try:
+#         import pymysql  # Fallback to pymysql (easier to install on Windows)
+#         pymysql.install_as_MySQLdb()
+#     except ImportError:
+#         # Final fallback to SQLite
+#         DATABASES = {
+#             'default': {
+#                 'ENGINE': 'django.db.backends.sqlite3',
+#                 'NAME': BASE_DIR / 'db.sqlite3',
+#             }
+#         }
 
 
 # Password validation
