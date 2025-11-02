@@ -84,9 +84,9 @@
                     <i class="fas fa-briefcase"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>15</h3>
+                    <h3>{{ active_jobs|default:"0" }}</h3>
                     <p>Active Jobs</p>
-                    <span class="stat-change positive">+3 this month</span>
+                    <span class="stat-change positive">{{ total_jobs|default:"0" }} total</span>
                 </div>
             </div>
 
@@ -95,9 +95,9 @@
                     <i class="fas fa-file-alt"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>248</h3>
+                    <h3>{{ total_applications|default:"0" }}</h3>
                     <p>Total Applications</p>
-                    <span class="stat-change positive">+45 this week</span>
+                    <span class="stat-change positive">All time</span>
                 </div>
             </div>
 
@@ -106,9 +106,9 @@
                     <i class="fas fa-user-check"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>32</h3>
+                    <h3>{{ hired_count|default:"0" }}</h3>
                     <p>Candidates Hired</p>
-                    <span class="stat-change positive">12% increase</span>
+                    <span class="stat-change positive">Success rate</span>
                 </div>
             </div>
 
@@ -117,7 +117,7 @@
                     <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>18</h3>
+                    <h3>{{ pending_applications|default:"0" }}</h3>
                     <p>Pending Reviews</p>
                     <span class="stat-change">Needs attention</span>
                 </div>
@@ -130,48 +130,32 @@
                     <a href="#" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
                 </div>
                 <div class="applications-list">
-                    <div class="application-item">
-                        <div class="applicant-info">
-                            <div class="applicant-avatar">JD</div>
-                            <div class="applicant-details">
-                                <h3>John Doe</h3>
-                                <p>Software Developer Position</p>
-                                <span class="application-meta">Applied 2 hours ago</span>
+                    {% if recent_applications %}
+                        {% for application in recent_applications %}
+                        <div class="application-item">
+                            <div class="applicant-info">
+                                <div class="applicant-avatar">{{ application.applicant.first_name|first|default:application.applicant.username|first|upper }}</div>
+                                <div class="applicant-details">
+                                    <h3>{{ application.applicant.first_name }} {{ application.applicant.last_name|default:"" }}</h3>
+                                    <p>{{ application.job.job_title }}</p>
+                                    <span class="application-meta">Applied {{ application.applied_at|timesince }} ago • Status: {{ application.get_status_display }}</span>
+                                </div>
+                            </div>
+                            <div class="application-actions">
+                                {% if application.match_score %}
+                                <div class="match-score">{{ application.match_score|floatformat:0 }}% Match</div>
+                                {% endif %}
+                                <a href="{% url 'jobs:job_detail' application.job.id %}" class="btn-view" style="text-decoration: none; display: inline-block;">View Profile</a>
                             </div>
                         </div>
-                        <div class="application-actions">
-                            <div class="match-score">92% Match</div>
-                            <button class="btn-view">View Profile</button>
+                        {% endfor %}
+                    {% else %}
+                        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                            <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                            <p>No applications yet. Post jobs to attract candidates!</p>
+                            <a href="{% url 'jobs:job_create' %}" class="btn-view" style="text-decoration: none; display: inline-block; margin-top: 1rem;">Post a Job</a>
                         </div>
-                    </div>
-                    <div class="application-item">
-                        <div class="applicant-info">
-                            <div class="applicant-avatar">JS</div>
-                            <div class="applicant-details">
-                                <h3>Jane Smith</h3>
-                                <p>Data Scientist Position</p>
-                                <span class="application-meta">Applied 5 hours ago</span>
-                            </div>
-                        </div>
-                        <div class="application-actions">
-                            <div class="match-score">89% Match</div>
-                            <button class="btn-view">View Profile</button>
-                        </div>
-                    </div>
-                    <div class="application-item">
-                        <div class="applicant-info">
-                            <div class="applicant-avatar">MJ</div>
-                            <div class="applicant-details">
-                                <h3>Mike Johnson</h3>
-                                <p>Frontend Developer Position</p>
-                                <span class="application-meta">Applied 1 day ago</span>
-                            </div>
-                        </div>
-                        <div class="application-actions">
-                            <div class="match-score">85% Match</div>
-                            <button class="btn-view">View Profile</button>
-                        </div>
-                    </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -185,6 +169,10 @@
                         <i class="fas fa-plus"></i>
                         <span>Post New Job</span>
                     </a>
+                    <a href="{% url 'jobs:job_list' %}" class="action-btn">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Manage Jobs</span>
+                    </a>
                     <a href="#" class="action-btn">
                         <i class="fas fa-search"></i>
                         <span>Search Candidates</span>
@@ -196,6 +184,10 @@
                     <a href="{% url 'accounts:profile' %}" class="action-btn">
                         <i class="fas fa-building"></i>
                         <span>Company Settings</span>
+                    </a>
+                    <a href="#" class="action-btn">
+                        <i class="fas fa-comments"></i>
+                        <span>Messages</span>
                     </a>
                 </div>
             </div>

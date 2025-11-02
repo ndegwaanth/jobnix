@@ -73,11 +73,11 @@
                     <i class="fas fa-users"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>{{ stats.total_users }}</h3>
+                    <h3>{{ stats.total_users|default:"0" }}</h3>
                     <p>Total Users</p>
                     <div class="stat-breakdown">
-                        <span>{{ stats.youth_users }} Youth</span>
-                        <span>{{ stats.employer_users }} Employers</span>
+                        <span>{{ stats.youth_users|default:"0" }} Youth</span>
+                        <span>{{ stats.employer_users|default:"0" }} Employers</span>
                     </div>
                 </div>
             </div>
@@ -87,9 +87,14 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>{{ stats.verified_users }}</h3>
+                    <h3>{{ stats.verified_users|default:"0" }}</h3>
                     <p>Verified Users</p>
-                    <span class="stat-change positive">{{ stats.verified_users|floatformat:0|default:"0" }}% verified</span>
+                    {% if stats.total_users %}
+                        {% widthratio stats.verified_users stats.total_users 100 as verification_rate %}
+                        <span class="stat-change positive">{{ verification_rate }}% verified</span>
+                    {% else %}
+                        <span class="stat-change">0% verified</span>
+                    {% endif %}
                 </div>
             </div>
 
@@ -98,7 +103,7 @@
                     <i class="fas fa-envelope"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>{{ stats.pending_verifications }}</h3>
+                    <h3>{{ stats.pending_verifications|default:"0" }}</h3>
                     <p>Pending Verifications</p>
                     <span class="stat-change warning">Needs attention</span>
                 </div>
@@ -109,7 +114,7 @@
                     <i class="fas fa-briefcase"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>{{ stats.total_jobs }}</h3>
+                    <h3>{{ stats.total_jobs|default:"0" }}</h3>
                     <p>Total Jobs</p>
                     <span class="stat-change">Active listings</span>
                 </div>
@@ -120,7 +125,7 @@
                     <i class="fas fa-file-alt"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>{{ stats.total_applications }}</h3>
+                    <h3>{{ stats.total_applications|default:"0" }}</h3>
                     <p>Applications</p>
                     <span class="stat-change">Total submitted</span>
                 </div>
@@ -131,9 +136,9 @@
                     <i class="fas fa-graduation-cap"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>{{ stats.total_courses }}</h3>
+                    <h3>{{ stats.total_courses|default:"0" }}</h3>
                     <p>Courses</p>
-                    <span class="stat-change">{{ stats.total_enrollments }} enrollments</span>
+                    <span class="stat-change">{{ stats.total_enrollments|default:"0" }} enrollments</span>
                 </div>
             </div>
 

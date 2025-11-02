@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification - JobNix</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #6366f1;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 900;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .logo .accent {
+            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .verification-code {
+            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+            color: white;
+            font-size: 32px;
+            font-weight: 900;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            letter-spacing: 8px;
+            margin: 30px 0;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .info-box {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #6366f1;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">
+                Job<span class="accent">Nix</span>
+            </div>
+            <h1 style="color: #1f2937; margin: 10px 0;">Verify Your Email Address</h1>
+        </div>
+        
+        <p>Hello <strong>{{ user.first_name|default:user.username }}</strong>,</p>
+        
+        <p>Thank you for signing up for JobNix! We're excited to have you join our community of empowered youth and employers.</p>
+        
+        <p>To complete your registration and start using JobNix, please verify your email address using the code below:</p>
+        
+        <div class="verification-code">
+            {{ code }}
+        </div>
+        
+        <div style="text-align: center;">
+            <a href="{{ verification_url }}" class="button">Verify Email Address</a>
+        </div>
+        
+        <div class="info-box">
+            <strong>⏰ Important:</strong> This verification code will expire in {{ expires_hours }} hours.
+            <br>
+            If you didn't create this account, please ignore this email.
+        </div>
+        
+        <p>If the button doesn't work, copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #6366f1;">{{ verification_url }}</p>
+        
+        <p>Once verified, you'll be able to:</p>
+        <ul>
+            <li>Access your personalized dashboard</li>
+            <li>Browse and apply for jobs</li>
+            <li>Enroll in training courses</li>
+            <li>Connect with employers and mentors</li>
+        </ul>
+        
+        <div class="footer">
+            <p><strong>JobNix Team</strong></p>
+            <p>Empowering Youth. Connecting Talent. Building Futures.</p>
+            <p style="font-size: 12px; margin-top: 10px;">
+                This is an automated message. Please do not reply to this email.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Success - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <style>
+        .success-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: var(--bg-secondary);
+        }
+        .success-box {
+            background: white;
+            border-radius: 1rem;
+            padding: 3rem;
+            box-shadow: var(--shadow-xl);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        .success-icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            color: white;
+            font-size: 4rem;
+            animation: bounceIn 0.6s ease-out;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            animation: confettiFall 3s infinite;
+        }
+        @keyframes confettiFall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-box">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h1 style="font-size: 2rem; font-weight: 900; margin-bottom: 1rem; color: var(--success);">
+                Email Verified Successfully!
+            </h1>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 1.1rem;">
+                Congratulations, {{ user.first_name|default:user.username }}!<br>
+                Your account has been activated and you're ready to get started.
+            </p>
+            
+            <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: var(--radius); margin: 2rem 0; text-align: left;">
+                <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">What you can do now:</h3>
+                <ul style="line-height: 2;">
+                    <li><i class="fas fa-check" style="color: var(--success);"></i> Complete your profile</li>
+                    <li><i class="fas fa-check" style="color: var(--success);"></i> Browse job opportunities</li>
+                    <li><i class="fas fa-check" style="color: var(--success);"></i> Enroll in training courses</li>
+                    <li><i class="fas fa-check" style="color: var(--success);"></i> Connect with employers</li>
+                </ul>
+            </div>
+            
+            <div style="margin: 2rem 0;">
+                <a href="{% url 'accounts:dashboard' %}" class="btn-login" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>Go to Dashboard</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

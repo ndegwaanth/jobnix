@@ -88,6 +88,15 @@
                 <strong>{{ email }}</strong>
             </p>
             
+            {% if verification_code %}
+            <div style="background: rgba(99, 102, 241, 0.1); padding: 1rem; border-radius: var(--radius); margin-bottom: 1.5rem; border-left: 4px solid var(--primary);">
+                <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Development Mode:</strong> Your verification code is <strong style="color: var(--primary); font-size: 1.1rem;">{{ verification_code }}</strong>
+                </p>
+            </div>
+            {% endif %}
+            
             {% if messages %}
                 <div class="alert-container">
                     {% for message in messages %}

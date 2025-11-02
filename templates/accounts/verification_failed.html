@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Failed - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <style>
+        .failed-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: var(--bg-secondary);
+        }
+        .failed-box {
+            background: white;
+            border-radius: 1rem;
+            padding: 3rem;
+            box-shadow: var(--shadow-xl);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        .failed-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            color: white;
+            font-size: 3rem;
+        }
+        .error-reasons {
+            background: rgba(239, 68, 68, 0.1);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            margin: 2rem 0;
+            border-left: 4px solid var(--error);
+            text-align: left;
+        }
+        .error-reasons h4 {
+            color: var(--error);
+            margin-bottom: 1rem;
+        }
+        .error-reasons ul {
+            line-height: 2;
+            margin-left: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="failed-container">
+        <div class="failed-box">
+            <div class="failed-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h1 style="font-size: 2rem; font-weight: 900; margin-bottom: 1rem; color: var(--error);">
+                Verification Failed
+            </h1>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+                We couldn't verify your email address. This might happen because:
+            </p>
+            
+            <div class="error-reasons">
+                <h4><i class="fas fa-times-circle"></i> Possible Reasons:</h4>
+                <ul>
+                    <li>The verification code has expired (valid for 24 hours)</li>
+                    <li>The code entered was incorrect</li>
+                    <li>The verification link has already been used</li>
+                    <li>There was an error processing your request</li>
+                </ul>
+            </div>
+            
+            <div style="margin: 2rem 0;">
+                {% if user %}
+                <a href="{% url 'accounts:resend_code' user.id %}" class="btn-login" style="background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%); margin-bottom: 1rem;">
+                    <i class="fas fa-redo"></i>
+                    <span>Resend Verification Code</span>
+                </a>
+                <br>
+                {% endif %}
+                <a href="{% url 'accounts:login' %}" class="btn-login" style="background: var(--bg-secondary); color: var(--text-primary); border: 2px solid var(--border-color);">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Login</span>
+                </a>
+            </div>
+            
+            <p style="color: var(--text-light); font-size: 0.9rem; margin-top: 2rem;">
+                Need help? <a href="{% url 'landing' %}#contact" style="color: var(--primary); font-weight: 600;">Contact Support</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+

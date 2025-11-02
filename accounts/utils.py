@@ -1,12 +1,17 @@
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils import timezone
+from django.urls import reverse
 from datetime import timedelta
 from .models import EmailVerification
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def send_verification_email(user, email):
-    """Send email verification code to user"""
+    """Send email verification code to user with HTML email"""
     # Generate verification code
     code = EmailVerification.generate_code()
     
@@ -28,14 +33,22 @@ def send_verification_email(user, email):
         verification.verified_at = None
         verification.save()
     
-    # Email subject and message
+    # Build verification URL
+    verification_url = settings.FRONTEND_URL or 'http://localhost:8000'
+    verification_url += reverse('accounts:verify_email', kwargs={'user_id': user.id})
+    
+    # Email subject
     subject = 'JobNix - Verify Your Email Address'
-    message = f"""
+    
+    # Plain text message
+    plain_message = f"""
 Hello {user.first_name or user.username},
 
 Thank you for signing up for JobNix!
 
 Your email verification code is: {code}
+
+Or click this link to verify: {verification_url}
 
 This code will expire in 24 hours.
 
@@ -45,18 +58,46 @@ Best regards,
 The JobNix Team
     """
     
+    # HTML message
+    html_message = render_to_string('accounts/emails/verification_email.html', {
+        'user': user,
+        'code': code,
+        'verification_url': verification_url,
+        'expires_hours': 24,
+    })
+    
+    # Check if using console backend (development mode)
+    is_console_backend = settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend'
+    
     try:
-        send_mail(
+        # Try to send HTML email
+        email_msg = EmailMultiAlternatives(
             subject,
-            message.strip(),
+            plain_message.strip(),
             settings.DEFAULT_FROM_EMAIL,
             [email],
-            fail_silently=False,
         )
+        email_msg.attach_alternative(html_message, "text/html")
+        email_msg.send(fail_silently=False)
+        
+        if is_console_backend:
+            logger.warning(f"Using console backend - Check terminal/console for verification code: {code}")
+        else:
+            logger.info(f"Verification email sent successfully to {email}")
         return verification
+        
     except Exception as e:
-        print(f"Error sending email: {e}")
-        return None
+        error_message = str(e)
+        logger.error(f"Failed to send verification email to {email}: {error_message}")
+        
+        # Check for authentication errors
+        if 'Authentication' in error_message or '530' in error_message or '535' in error_message:
+            logger.error("Gmail authentication failed. Please set EMAIL_HOST_PASSWORD in .env file with Gmail App Password.")
+            logger.error("For development, verification code is: " + code)
+        
+        # Still return verification object so user can see the code on the page
+        # The verification code will be displayed on the verification page if email fails
+        return verification
 
 
 def verify_email_code(user, email, code):

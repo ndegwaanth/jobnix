@@ -170,13 +170,30 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Email Configuration
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'ndegwaanthony300@gmail.com')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@jobnix.com')
+
+# Check if email password is set, if not use console backend for development
+if not EMAIL_HOST_PASSWORD or EMAIL_HOST_PASSWORD.strip() == '':
+    # Use console backend for development when password not set
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    print("\n" + "="*60)
+    print("⚠️  EMAIL_PASSWORD not set in .env file")
+    print("⚠️  Using console backend - emails will be printed to console")
+    print("⚠️  To enable real emails, add EMAIL_HOST_PASSWORD to .env")
+    print("="*60 + "\n")
+else:
+    EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+    EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+    EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+    EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False') == 'True'
+
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# Frontend URL for email links
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:8000')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
