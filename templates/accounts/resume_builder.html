@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Builder - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    {% load account_filters %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dashboard-youth">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'accounts:resume_builder' %}" class="nav-item active">
+                <i class="fas fa-file-alt"></i>
+                <span>Resume Builder</span>
+            </a>
+            <a href="{% url 'accounts:profile_edit' %}" class="nav-item">
+                <i class="fas fa-user-edit"></i>
+                <span>Edit Profile</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Resume Builder</h1>
+                <p>Generate a professional resume from your profile</p>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Resume Preview -->
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-file-pdf"></i> Resume Preview</h2>
+                    <div class="action-buttons">
+                        <a href="?download=pdf" class="btn-primary">
+                            <i class="fas fa-download"></i> Download PDF
+                        </a>
+                        <a href="{% url 'accounts:profile_edit' %}" class="btn-secondary">
+                            <i class="fas fa-edit"></i> Update Profile
+                        </a>
+                    </div>
+                </div>
+                <div class="resume-preview">
+                    <div class="resume-header">
+                        <h1>{{ user.get_full_name|default:user.username }}</h1>
+                        <p>{{ user.email }} | {{ user.phone|default:"No phone" }}</p>
+                        {% if profile.location %}
+                        <p>{{ profile.location }}</p>
+                        {% endif %}
+                    </div>
+
+                    {% if profile.bio %}
+                    <section class="resume-section">
+                        <h2>Professional Summary</h2>
+                        <p>{{ profile.bio }}</p>
+                    </section>
+                    {% endif %}
+
+                    {% if profile.skills %}
+                    <section class="resume-section">
+                        <h2>Skills</h2>
+                        <div class="skills-list">
+                            {% for skill in profile.skills|split:"," %}
+                                <span class="skill-tag">{{ skill|trim }}</span>
+                            {% endfor %}
+                        </div>
+                    </section>
+                    {% endif %}
+
+                    {% if profile.education_level %}
+                    <section class="resume-section">
+                        <h2>Education</h2>
+                        <p><strong>Education Level:</strong> {{ profile.education_level }}</p>
+                    </section>
+                    {% endif %}
+
+                    {% if applications %}
+                    <section class="resume-section">
+                        <h2>Work Experience</h2>
+                        {% for application in applications %}
+                            {% if application.status == 'accepted' %}
+                            <div class="experience-item">
+                                <h3>{{ application.job.job_title }}</h3>
+                                <p>{{ application.job.company_name }} | {{ application.applied_at|date:"Y" }}</p>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </section>
+                    {% endif %}
+
+                    {% if certificates %}
+                    <section class="resume-section">
+                        <h2>Certifications</h2>
+                        {% for cert in certificates %}
+                        <div class="cert-item">
+                            <h3>{{ cert.course.title }}</h3>
+                            <p>Certificate Number: {{ cert.certificate_number }}</p>
+                            <p>Issued: {{ cert.issued_at|date:"F Y" }}</p>
+                        </div>
+                        {% endfor %}
+                    </section>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-lightbulb"></i> Resume Tips</h2>
+                </div>
+                <ul class="tips-list">
+                    <li><i class="fas fa-check-circle"></i> Keep your resume updated with latest skills</li>
+                    <li><i class="fas fa-check-circle"></i> Highlight relevant experience</li>
+                    <li><i class="fas fa-check-circle"></i> Include certifications and achievements</li>
+                    <li><i class="fas fa-check-circle"></i> Use action verbs in descriptions</li>
+                    <li><i class="fas fa-check-circle"></i> Tailor resume for each application</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

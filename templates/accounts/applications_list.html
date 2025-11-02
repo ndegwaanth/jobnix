@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Applications - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dashboard-youth">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'jobs:job_list' %}" class="nav-item">
+                <i class="fas fa-briefcase"></i>
+                <span>Browse Jobs</span>
+            </a>
+            <a href="{% url 'accounts:applications_list' %}" class="nav-item active">
+                <i class="fas fa-file-alt"></i>
+                <span>My Applications</span>
+            </a>
+            <a href="{% url 'accounts:saved_jobs' %}" class="nav-item">
+                <i class="fas fa-bookmark"></i>
+                <span>Saved Jobs</span>
+            </a>
+            <a href="{% url 'accounts:profile' %}" class="nav-item">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>My Applications</h1>
+                <p>Track your job applications and their status</p>
+            </div>
+            <div class="topbar-right">
+                <a href="{% url 'jobs:job_list' %}" class="btn-primary">
+                    <i class="fas fa-plus"></i> Apply for More Jobs
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Stats Cards -->
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ applications|length }}</h3>
+                    <p>Total Applications</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ applications|length|default:"0" }}</h3>
+                    <p>Pending Review</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>0</h3>
+                    <p>Accepted</p>
+                </div>
+            </div>
+
+            <!-- Applications List -->
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-list"></i> Application History</h2>
+                    <div class="filter-group">
+                        <select id="statusFilter" onchange="filterApplications()">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="reviewing">Under Review</option>
+                            <option value="shortlisted">Shortlisted</option>
+                            <option value="interview">Interview</option>
+                            <option value="accepted">Accepted</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="applications-list">
+                    {% if applications %}
+                        {% for application in applications %}
+                        <div class="application-item" data-status="{{ application.status }}">
+                            <div class="application-content">
+                                <div class="application-header">
+                                    <div class="job-info">
+                                        <h3>{{ application.job.job_title }}</h3>
+                                        <p><i class="fas fa-building"></i> {{ application.job.company_name }}</p>
+                                        <p><i class="fas fa-map-marker-alt"></i> {{ application.job.location }}</p>
+                                    </div>
+                                    <div class="application-status">
+                                        <span class="status-badge status-{{ application.status }}">
+                                            {{ application.get_status_display }}
+                                        </span>
+                                        {% if application.match_score %}
+                                        <div class="match-score">
+                                            <i class="fas fa-chart-line"></i> {{ application.match_score|floatformat:0 }}% Match
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="application-meta">
+                                    <span><i class="fas fa-calendar"></i> Applied {{ application.applied_at|timesince }} ago</span>
+                                    <span><i class="fas fa-briefcase"></i> {{ application.job.work_type|title }}</span>
+                                    <span><i class="fas fa-money-bill"></i> {{ application.job.salary_display_text }}</span>
+                                </div>
+                                {% if application.job.application_link %}
+                                <a href="{{ application.job.application_link }}" target="_blank" class="btn-view-job">
+                                    <i class="fas fa-external-link-alt"></i> View Job Posting
+                                </a>
+                                {% else %}
+                                <a href="{% url 'jobs:job_detail' application.job.id %}" class="btn-view-job">
+                                    <i class="fas fa-eye"></i> View Job Details
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-file-alt"></i>
+                            <h3>No Applications Yet</h3>
+                            <p>Start applying for jobs to track your applications here</p>
+                            <a href="{% url 'jobs:job_list' %}" class="btn-primary">
+                                <i class="fas fa-search"></i> Browse Jobs
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function filterApplications() {
+            const filter = document.getElementById('statusFilter').value;
+            const items = document.querySelectorAll('.application-item');
+            items.forEach(item => {
+                if (!filter || item.dataset.status === filter) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

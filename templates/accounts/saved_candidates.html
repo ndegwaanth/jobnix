@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Candidates - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    {% load account_filters %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dashboard-employer">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'accounts:saved_candidates' %}" class="nav-item active">
+                <i class="fas fa-bookmark"></i>
+                <span>Saved Candidates</span>
+            </a>
+            <a href="{% url 'accounts:candidate_search' %}" class="nav-item">
+                <i class="fas fa-search"></i>
+                <span>Search Candidates</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Saved Candidates</h1>
+                <p>Your bookmarked candidates</p>
+            </div>
+            <div class="topbar-right">
+                <a href="{% url 'accounts:candidate_search' %}" class="btn-primary">
+                    <i class="fas fa-search"></i> Search More
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-bookmark"></i> Saved Candidates ({{ saved_candidates|length }})</h2>
+                </div>
+                <div class="candidates-list">
+                    {% if saved_candidates %}
+                        {% for saved in saved_candidates %}
+                        <div class="candidate-card">
+                            <div class="candidate-header">
+                                <div class="candidate-avatar">{{ saved.candidate.first_name|first|default:saved.candidate.username|first|upper }}</div>
+                                <div class="candidate-info">
+                                    <h3>{{ saved.candidate.get_full_name|default:saved.candidate.username }}</h3>
+                                    <p>{{ saved.candidate.email }}</p>
+                                    {% if saved.candidate.job_seeker_profile and saved.candidate.job_seeker_profile.location %}
+                                    <p><i class="fas fa-map-marker-alt"></i> {{ saved.candidate.job_seeker_profile.location }}</p>
+                                    {% endif %}
+                                    <span class="saved-meta">Saved {{ saved.saved_at|timesince }} ago</span>
+                                </div>
+                                <button class="bookmark-btn active" onclick="unsaveCandidate({{ saved.candidate.id }})">
+                                    <i class="fas fa-bookmark"></i>
+                                </button>
+                            </div>
+                            {% if saved.candidate.job_seeker_profile and saved.candidate.job_seeker_profile.skills %}
+                            <div class="candidate-skills">
+                                {% for skill in saved.candidate.job_seeker_profile.skills|split:","|slice:":5" %}
+                                    <span class="skill-tag">{{ skill|trim }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="candidate-actions">
+                                <a href="{% url 'accounts:candidate_profile' saved.candidate.id %}" class="btn-view">
+                                    <i class="fas fa-eye"></i> View Profile
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-bookmark"></i>
+                            <h3>No Saved Candidates</h3>
+                            <p>Start saving candidates you're interested in</p>
+                            <a href="{% url 'accounts:candidate_search' %}" class="btn-primary">
+                                <i class="fas fa-search"></i> Search Candidates
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function unsaveCandidate(candidateId) {
+            if (confirm('Remove this candidate from your saved list?')) {
+                fetch(`/accounts/candidates/${candidateId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'action=unsave'
+                }).then(() => location.reload());
+            }
+        }
+    </script>
+</body>
+</html>
+

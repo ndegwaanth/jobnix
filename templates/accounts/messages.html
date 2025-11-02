@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <style>
+        .messages-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 1.5rem;
+            height: calc(100vh - 200px);
+        }
+        .conversations-list {
+            background: white;
+            border-radius: 1rem;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        .conversation-item {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .conversation-item:hover {
+            background: var(--bg-secondary);
+        }
+        .conversation-item.active {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+        .messages-area {
+            background: white;
+            border-radius: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .messages-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .messages-list {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        .message-item {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+        }
+        .message-item.sent {
+            justify-content: flex-end;
+        }
+        .message-bubble {
+            max-width: 70%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            background: var(--bg-secondary);
+        }
+        .message-item.sent .message-bubble {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+        .message-form {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body class="dashboard-youth">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'accounts:messages' %}" class="nav-item active">
+                <i class="fas fa-envelope"></i>
+                <span>Messages</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Messages</h1>
+                <p>Communicate with employers and mentors</p>
+            </div>
+        </header>
+
+        <div class="messages-container">
+            <!-- Conversations List -->
+            <div class="conversations-list">
+                <h3 style="margin-bottom: 1rem;">Conversations</h3>
+                {% if conversation_partners %}
+                    {% for partner in conversation_partners %}
+                    <a href="?with={{ partner.id }}" class="conversation-item {% if current_user_id == partner.id|stringformat:"s" %}active{% endif %}">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                {{ partner.first_name|first|default:partner.username|first|upper }}
+                            </div>
+                            <div>
+                                <h4 style="margin: 0;">{{ partner.get_full_name|default:partner.username }}</h4>
+                                <p style="margin: 0; font-size: 0.85rem; opacity: 0.7;">{{ partner.get_role_display }}</p>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <p style="text-align: center; color: var(--text-secondary); padding: 2rem;">No conversations yet</p>
+                {% endif %}
+            </div>
+
+            <!-- Messages Area -->
+            <div class="messages-area">
+                {% if current_user_id and messages %}
+                    <div class="messages-header">
+                        {% for partner in conversation_partners %}
+                            {% if current_user_id == partner.id|stringformat:"s" %}
+                            <h3>{{ partner.get_full_name|default:partner.username }}</h3>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="messages-list">
+                        {% for message in messages %}
+                        <div class="message-item {% if message.sender == user %}sent{% endif %}">
+                            <div class="message-bubble">
+                                <p style="margin: 0;">{{ message.message }}</p>
+                                <span style="font-size: 0.75rem; opacity: 0.7;">{{ message.created_at|timesince }} ago</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <form method="POST" class="message-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="receiver_id" value="{{ current_user_id }}">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" name="message" placeholder="Type your message..." style="flex: 1; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem;" required>
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: var(--text-secondary);">
+                        <i class="fas fa-comments" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                        <h3>Select a conversation</h3>
+                        <p>Choose a conversation from the list to start messaging</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

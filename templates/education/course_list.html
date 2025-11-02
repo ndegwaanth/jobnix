@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Courses - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/advanced_styles.css' %}">
+</head>
+<body class="dashboard-youth">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'jobs:job_list' %}" class="nav-item">
+                <i class="fas fa-briefcase"></i>
+                <span>Browse Jobs</span>
+            </a>
+            <a href="{% url 'education:course_list' %}" class="nav-item active">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Courses</span>
+            </a>
+            <a href="{% url 'education:my_courses' %}" class="nav-item">
+                <i class="fas fa-book"></i>
+                <span>My Courses</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Browse Courses</h1>
+                <p>Explore skill-building courses and training programs</p>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Search & Filters -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-filter"></i> Search & Filter</h2>
+                </div>
+                <form method="GET" class="search-form" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%); padding: 2rem; border-radius: var(--radius-lg); border: 1px solid rgba(99, 102, 241, 0.2);">
+                    <div class="form-group">
+                        <label>Search Courses</label>
+                        <input type="text" name="search" value="{{ search_query }}" placeholder="Search by title, description, skills...">
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select name="category">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat|title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Level</label>
+                            <select name="level">
+                                <option value="">All Levels</option>
+                                {% for level_code, level_name in levels %}
+                                    <option value="{{ level_code }}" {% if selected_level == level_code %}selected{% endif %}>{{ level_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="free" value="1" {% if request.GET.free %}checked{% endif %}>
+                            Free Courses Only
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%;">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    <a href="{% url 'education:course_list' %}" class="btn-secondary" style="width: 100%; margin-top: 0.5rem; display: block; text-align: center;">
+                        Clear Filters
+                    </a>
+                </form>
+            </div>
+
+            <!-- Courses Grid -->
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-graduation-cap"></i> Available Courses ({{ courses|length }})</h2>
+                </div>
+                <div class="courses-grid-advanced">
+                    {% if courses %}
+                        {% for course in courses %}
+                        <div class="enhanced-card course-card">
+                            {% if course.thumbnail %}
+                            <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" style="width: 100%; height: 180px; object-fit: cover; border-radius: var(--radius) 0 0 var(--radius); margin-bottom: 1rem;">
+                            {% else %}
+                            <div class="course-thumbnail-placeholder" style="width: 100%; height: 180px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: var(--radius); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            {% endif %}
+                            <div class="course-header">
+                                <div class="course-info">
+                                    <h3>{{ course.title }}</h3>
+                                    <p class="company-name">{{ course.institution.get_full_name|default:course.institution.username|default:"JobNix" }}</p>
+                                    {% if course.category %}
+                                    <span class="category-badge">{{ course.category|title }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if user.is_authenticated %}
+                                <form method="POST" action="{% url 'education:save_course' course.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bookmark-btn {% if course.id in saved_course_ids %}active{% endif %}" style="background: transparent; border: none; cursor: pointer;">
+                                        <i class="fas fa-bookmark"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                            <div class="course-details">
+                                <span><i class="fas fa-signal"></i> {{ course.get_level_display }}</span>
+                                <span><i class="fas fa-clock"></i> {{ course.duration_hours }} hours</span>
+                                <span><i class="fas fa-users"></i> {{ course.enrollments_count }} enrolled</span>
+                                <span><i class="fas fa-money-bill"></i> {% if course.is_free %}Free{% else %}KES {{ course.price }}{% endif %}</span>
+                            </div>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 1rem 0;">{{ course.description|truncatewords:20 }}</p>
+                            <div class="course-footer">
+                                <a href="{% url 'education:course_detail' course.id %}" class="btn-apply">
+                                    View Details <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state" style="grid-column: 1 / -1;">
+                            <i class="fas fa-graduation-cap"></i>
+                            <h3>No Courses Found</h3>
+                            <p>Try adjusting your search filters or check back later</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

@@ -23,27 +23,35 @@
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="{% url 'jobs:job_create' %}" class="nav-item">
+            <a href="{% url 'accounts:job_post_create' %}" class="nav-item">
                 <i class="fas fa-plus-circle"></i>
                 <span>Post Job</span>
             </a>
-            <a href="{% url 'jobs:job_list' %}" class="nav-item">
-                <i class="fas fa-briefcase"></i>
-                <span>My Jobs</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-users"></i>
-                <span>Candidates</span>
-            </a>
-            <a href="#" class="nav-item">
+            <a href="{% url 'accounts:applicants' %}" class="nav-item">
                 <i class="fas fa-file-alt"></i>
                 <span>Applications</span>
             </a>
-            <a href="{% url 'analytics:user_analytics' %}" class="nav-item">
-                <i class="fas fa-chart-line"></i>
-                <span>Analytics</span>
+            <a href="{% url 'accounts:candidate_search' %}" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Search Candidates</span>
             </a>
-            <a href="{% url 'accounts:profile' %}" class="nav-item">
+            <a href="{% url 'accounts:saved_candidates' %}" class="nav-item">
+                <i class="fas fa-bookmark"></i>
+                <span>Saved Candidates</span>
+            </a>
+            <a href="{% url 'accounts:employer_reports' %}" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Reports & Analytics</span>
+            </a>
+            <a href="{% url 'accounts:notifications' %}" class="nav-item">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+            </a>
+            <a href="{% url 'accounts:messages' %}" class="nav-item">
+                <i class="fas fa-envelope"></i>
+                <span>Messages</span>
+            </a>
+            <a href="{% url 'accounts:company_profile' %}" class="nav-item">
                 <i class="fas fa-building"></i>
                 <span>Company Profile</span>
             </a>
@@ -65,10 +73,10 @@
                 <p>Manage your recruitment and hiring</p>
             </div>
             <div class="topbar-right">
-                <div class="notifications">
+                <a href="{% url 'accounts:notifications' %}" class="notifications">
                     <i class="fas fa-bell"></i>
-                    <span class="badge">12</span>
-                </div>
+                    <span class="badge">{{ unread_notifications|default:"0" }}</span>
+                </a>
                 <div class="user-menu">
                     <img src="https://ui-avatars.com/api/?name={{ user.employer_profile.company_name|default:user.username }}&background=ec4899&color=fff" alt="Company" class="avatar">
                     <span>{{ user.first_name|default:user.username }}</span>
@@ -127,7 +135,7 @@
             <div class="dashboard-card large">
                 <div class="card-header">
                     <h2><i class="fas fa-users"></i> Recent Applications</h2>
-                    <a href="#" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+                    <a href="{% url 'accounts:applicants' %}" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
                 </div>
                 <div class="applications-list">
                     {% if recent_applications %}
@@ -145,7 +153,7 @@
                                 {% if application.match_score %}
                                 <div class="match-score">{{ application.match_score|floatformat:0 }}% Match</div>
                                 {% endif %}
-                                <a href="{% url 'jobs:job_detail' application.job.id %}" class="btn-view" style="text-decoration: none; display: inline-block;">View Profile</a>
+                                <a href="{% url 'accounts:candidate_profile' application.applicant.id %}" class="btn-view" style="text-decoration: none; display: inline-block;">View Profile</a>
                             </div>
                         </div>
                         {% endfor %}
@@ -153,7 +161,7 @@
                         <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
                             <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
                             <p>No applications yet. Post jobs to attract candidates!</p>
-                            <a href="{% url 'jobs:job_create' %}" class="btn-view" style="text-decoration: none; display: inline-block; margin-top: 1rem;">Post a Job</a>
+                            <a href="{% url 'accounts:job_post_create' %}" class="btn-view" style="text-decoration: none; display: inline-block; margin-top: 1rem;">Post a Job</a>
                         </div>
                     {% endif %}
                 </div>
@@ -165,27 +173,27 @@
                     <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
                 </div>
                 <div class="quick-actions">
-                    <a href="{% url 'jobs:job_create' %}" class="action-btn">
+                    <a href="{% url 'accounts:job_post_create' %}" class="action-btn">
                         <i class="fas fa-plus"></i>
                         <span>Post New Job</span>
                     </a>
-                    <a href="{% url 'jobs:job_list' %}" class="action-btn">
-                        <i class="fas fa-briefcase"></i>
-                        <span>Manage Jobs</span>
+                    <a href="{% url 'accounts:applicants' %}" class="action-btn">
+                        <i class="fas fa-file-alt"></i>
+                        <span>View Applications</span>
                     </a>
-                    <a href="#" class="action-btn">
+                    <a href="{% url 'accounts:candidate_search' %}" class="action-btn">
                         <i class="fas fa-search"></i>
                         <span>Search Candidates</span>
                     </a>
-                    <a href="{% url 'analytics:user_analytics' %}" class="action-btn">
+                    <a href="{% url 'accounts:employer_reports' %}" class="action-btn">
                         <i class="fas fa-chart-bar"></i>
-                        <span>View Analytics</span>
+                        <span>View Reports</span>
                     </a>
-                    <a href="{% url 'accounts:profile' %}" class="action-btn">
+                    <a href="{% url 'accounts:company_profile' %}" class="action-btn">
                         <i class="fas fa-building"></i>
                         <span>Company Settings</span>
                     </a>
-                    <a href="#" class="action-btn">
+                    <a href="{% url 'accounts:messages' %}" class="action-btn">
                         <i class="fas fa-comments"></i>
                         <span>Messages</span>
                     </a>

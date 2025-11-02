@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ job.job_title }} - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    {% load account_filters %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dashboard-youth">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'jobs:job_list' %}" class="nav-item">
+                <i class="fas fa-briefcase"></i>
+                <span>Browse Jobs</span>
+            </a>
+            <a href="{% url 'jobs:job_detail' job.id %}" class="nav-item active">
+                <i class="fas fa-file-alt"></i>
+                <span>Job Details</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>{{ job.job_title }}</h1>
+                <p>{{ job.company_name }}</p>
+            </div>
+            <div class="topbar-right">
+                {% if user.is_authenticated %}
+                <button class="btn-secondary" onclick="saveJob({{ job.id }})">
+                    <i class="fas fa-bookmark"></i> {% if is_saved %}Saved{% else %}Save Job{% endif %}
+                </button>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Job Info Card -->
+            <div class="dashboard-card">
+                <div class="job-meta" style="margin-bottom: 1.5rem;">
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                        <span class="status-badge status-active"><i class="fas fa-map-marker-alt"></i> {{ job.location }}</span>
+                        <span class="status-badge status-active"><i class="fas fa-briefcase"></i> {{ job.get_work_type_display }}</span>
+                        <span class="status-badge status-active"><i class="fas fa-signal"></i> {{ job.get_experience_level_display }}</span>
+                        <span class="status-badge status-active"><i class="fas fa-money-bill"></i> {{ job.salary_display_text }}</span>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        <i class="fas fa-clock"></i> Posted {{ job.date_posted|timesince }} ago
+                        {% if job.application_deadline %}
+                        | Deadline: {{ job.application_deadline|date:"M d, Y" }}
+                        {% endif %}
+                    </p>
+                </div>
+
+                {% if not has_applied %}
+                    {% if job.application_link %}
+                    <a href="{{ job.application_link }}" target="_blank" class="btn-primary" style="width: 100%; display: block; text-align: center; margin-top: 1rem;">
+                        <i class="fas fa-external-link-alt"></i> Apply Now (External)
+                    </a>
+                    {% else %}
+                    <a href="{% url 'jobs:job_apply' job.id %}" class="btn-primary" style="width: 100%; display: block; text-align: center; margin-top: 1rem;">
+                        <i class="fas fa-paper-plane"></i> Apply Now
+                    </a>
+                    {% endif %}
+                {% else %}
+                <div class="btn-secondary" style="width: 100%; display: block; text-align: center; margin-top: 1rem; cursor: default;">
+                    <i class="fas fa-check"></i> Already Applied
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Job Details -->
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-info-circle"></i> Job Description</h2>
+                </div>
+                <div style="margin-bottom: 2rem;">
+                    <p style="font-size: 1.1rem; line-height: 1.8; white-space: pre-wrap;">{{ job.job_description }}</p>
+                </div>
+
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;"><i class="fas fa-graduation-cap"></i> Qualifications</h3>
+                    <p style="white-space: pre-wrap;">{{ job.qualifications }}</p>
+                </div>
+
+                {% if job.skills_required %}
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;"><i class="fas fa-tools"></i> Required Skills</h3>
+                    <div class="skills-list">
+                        {% for skill in job.skills_required|split:"," %}
+                            <span class="skill-tag">{{ skill|trim }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if job.application_instructions %}
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: var(--bg-secondary); border-radius: var(--radius);">
+                    <h3 style="margin-bottom: 1rem;"><i class="fas fa-clipboard-list"></i> How to Apply</h3>
+                    <p style="white-space: pre-wrap;">{{ job.application_instructions }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+    {% load account_filters %}
+    <script>
+        function saveJob(jobId) {
+            fetch(`{% url 'jobs:save_job' 0 %}`.replace('0', jobId), {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+            }).then(() => location.reload());
+        }
+    </script>
+</body>
+</html>
+

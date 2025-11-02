@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Certificates - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dashboard-youth">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'accounts:certificates' %}" class="nav-item active">
+                <i class="fas fa-certificate"></i>
+                <span>Certificates</span>
+            </a>
+            <a href="{% url 'education:my_courses' %}" class="nav-item">
+                <i class="fas fa-book"></i>
+                <span>My Courses</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>My Certificates</h1>
+                <p>Your completed course certificates and achievements</p>
+            </div>
+            <div class="topbar-right">
+                <a href="{% url 'education:course_list' %}" class="btn-primary">
+                    <i class="fas fa-graduation-cap"></i> Explore Courses
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-award"></i> Certificates ({{ certificates|length }})</h2>
+                </div>
+                <div class="certificates-grid">
+                    {% if certificates %}
+                        {% for certificate in certificates %}
+                        <div class="certificate-card">
+                            <div class="certificate-header">
+                                <div class="cert-icon">
+                                    <i class="fas fa-certificate"></i>
+                                </div>
+                                <div class="cert-info">
+                                    <h3>{{ certificate.course.title }}</h3>
+                                    <p>Certificate #{{ certificate.certificate_number }}</p>
+                                </div>
+                            </div>
+                            <div class="certificate-details">
+                                <p><i class="fas fa-calendar"></i> Issued: {{ certificate.issued_at|date:"F d, Y" }}</p>
+                                {% if certificate.certificate_file %}
+                                <a href="{{ certificate.certificate_file.url }}" download class="btn-download">
+                                    <i class="fas fa-download"></i> Download PDF
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-certificate"></i>
+                            <h3>No Certificates Yet</h3>
+                            <p>Complete courses to earn certificates</p>
+                            <a href="{% url 'education:course_list' %}" class="btn-primary">
+                                <i class="fas fa-search"></i> Browse Courses
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

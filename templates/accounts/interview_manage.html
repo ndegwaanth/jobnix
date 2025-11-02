@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Interview - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dashboard-employer">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'accounts:applicants' %}" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Applications</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Schedule Interview</h1>
+                <p>Interview for {{ application.job.job_title }}</p>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Application Info -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user"></i> Candidate Information</h2>
+                </div>
+                <div class="candidate-info-box">
+                    <h3>{{ application.applicant.get_full_name|default:application.applicant.username }}</h3>
+                    <p>{{ application.applicant.email }}</p>
+                    <p><strong>Job:</strong> {{ application.job.job_title }}</p>
+                    <p><strong>Company:</strong> {{ application.job.company_name }}</p>
+                </div>
+            </div>
+
+            <!-- Interview Form -->
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-calendar-alt"></i> Interview Details</h2>
+                </div>
+                <form method="POST" class="interview-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label>Interview Date & Time *</label>
+                            <input type="datetime-local" name="scheduled_at" {% if interview %}value="{{ interview.scheduled_at|date:'Y-m-d\TH:i' }}"{% endif %} required>
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" name="location" value="{{ interview.location|default:'' }}" placeholder="Office address or 'Virtual'">
+                        </div>
+                        <div class="form-group">
+                            <label>Meeting Link (for virtual interviews)</label>
+                            <input type="url" name="meeting_link" value="{{ interview.meeting_link|default:'' }}" placeholder="Zoom, Teams, or Google Meet link">
+                        </div>
+                        <div class="form-group">
+                            <label>Interview Notes</label>
+                            <textarea name="notes" rows="5" placeholder="Additional instructions or notes for the candidate...">{{ interview.notes|default:'' }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-calendar-check"></i> Schedule Interview
+                        </button>
+                        <a href="{% url 'accounts:applicants' application.job.id %}" class="btn-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

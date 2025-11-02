@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Management - JobNix Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+</head>
+<body class="dashboard-admin">
+    <!-- Sidebar -->
+    <aside class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>Job<span class="accent">Nix</span> Admin</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin_panel:course_management' %}" class="nav-item active">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Courses</span>
+            </a>
+            <a href="{% url 'admin_panel:analytics' %}" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar admin-topbar">
+            <div class="topbar-left">
+                <h1>Course Management</h1>
+                <p>Approve and manage training courses</p>
+            </div>
+            <div class="topbar-right">
+                <div class="filter-group">
+                    <select id="statusFilter" onchange="filterCourses()">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="active">Active</option>
+                        <option value="archived">Archived</option>
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card admin-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-graduation-cap"></i> All Courses ({{ courses|length }})</h2>
+                </div>
+                <div class="courses-table">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: var(--bg-secondary);">
+                                <th style="padding: 1rem; text-align: left;">Course Title</th>
+                                <th style="padding: 1rem; text-align: left;">Institution</th>
+                                <th style="padding: 1rem; text-align: center;">Level</th>
+                                <th style="padding: 1rem; text-align: center;">Status</th>
+                                <th style="padding: 1rem; text-align: center;">Enrollments</th>
+                                <th style="padding: 1rem; text-align: center;">Posted</th>
+                                <th style="padding: 1rem; text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in courses %}
+                            <tr style="border-bottom: 1px solid var(--border-color);" data-status="{{ course.status }}">
+                                <td style="padding: 1rem;">
+                                    <strong>{{ course.title }}</strong>
+                                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">{{ course.category|default:"General" }}</p>
+                                </td>
+                                <td style="padding: 1rem;">{{ course.institution.username|default:"N/A" }}</td>
+                                <td style="padding: 1rem; text-align: center;">{{ course.get_level_display }}</td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    <span class="status-badge status-{{ course.status }}">{{ course.get_status_display }}</span>
+                                </td>
+                                <td style="padding: 1rem; text-align: center;">{{ course.enrollments_count }}</td>
+                                <td style="padding: 1rem; text-align: center;">{{ course.created_at|date:"M d, Y" }}</td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    <div class="action-buttons">
+                                        {% if course.status == 'pending' %}
+                                        <form method="POST" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="course_id" value="{{ course.id }}">
+                                            <input type="hidden" name="action" value="approve">
+                                            <button type="submit" class="btn-success-small">
+                                                <i class="fas fa-check"></i> Approve
+                                            </button>
+                                        </form>
+                                        <form method="POST" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="course_id" value="{{ course.id }}">
+                                            <input type="hidden" name="action" value="reject">
+                                            <button type="submit" class="btn-danger-small">
+                                                <i class="fas fa-times"></i> Reject
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this course?');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="course_id" value="{{ course.id }}">
+                                            <input type="hidden" name="action" value="delete">
+                                            <button type="submit" class="btn-danger-small">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function filterCourses() {
+            const filter = document.getElementById('statusFilter').value;
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                if (!filter || row.dataset.status === filter) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

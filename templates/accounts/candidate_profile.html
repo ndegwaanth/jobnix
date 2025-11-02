@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Profile - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    {% load account_filters %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dashboard-employer">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'accounts:candidate_search' %}" class="nav-item">
+                <i class="fas fa-search"></i>
+                <span>Search Candidates</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>{{ candidate.get_full_name|default:candidate.username }}</h1>
+                <p>Candidate Profile</p>
+            </div>
+            <div class="topbar-right">
+                <form method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    {% if is_saved %}
+                        <input type="hidden" name="action" value="unsave">
+                        <button type="submit" class="btn-secondary">
+                            <i class="fas fa-bookmark"></i> Remove from Saved
+                        </button>
+                    {% else %}
+                        <input type="hidden" name="action" value="save">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-bookmark"></i> Save Candidate
+                        </button>
+                    {% endif %}
+                </form>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Candidate Info -->
+            <div class="dashboard-card">
+                <div class="candidate-header-large">
+                    {% if profile.profile_picture %}
+                    <img src="{{ profile.profile_picture.url }}" alt="Profile" class="profile-photo">
+                    {% else %}
+                    <div class="profile-avatar-large">{{ candidate.first_name|first|default:candidate.username|first|upper }}</div>
+                    {% endif %}
+                    <div class="candidate-info-large">
+                        <h2>{{ candidate.get_full_name|default:candidate.username }}</h2>
+                        <p>{{ candidate.email }}</p>
+                        {% if profile.location %}
+                        <p><i class="fas fa-map-marker-alt"></i> {{ profile.location }}</p>
+                        {% endif %}
+                        {% if profile.resume %}
+                        <a href="{{ profile.resume.url }}" download class="btn-primary" style="margin-top: 1rem; display: inline-block;">
+                            <i class="fas fa-download"></i> Download Resume
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bio -->
+            {% if profile.bio %}
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user"></i> About</h2>
+                </div>
+                <p>{{ profile.bio }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Skills -->
+            {% if profile.skills %}
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-tools"></i> Skills</h2>
+                </div>
+                <div class="skills-list">
+                    {% for skill in profile.skills|split:"," %}
+                        <span class="skill-tag">{{ skill|trim }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Education -->
+            {% if profile.education_level %}
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-graduation-cap"></i> Education</h2>
+                </div>
+                <p><strong>Education Level:</strong> {{ profile.education_level }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Application History -->
+            {% if applications %}
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-briefcase"></i> Application History</h2>
+                </div>
+                <div class="applications-list">
+                    {% for application in applications %}
+                    <div class="application-item">
+                        <div class="applicant-info">
+                            <div class="job-info">
+                                <h3>{{ application.job.job_title }}</h3>
+                                <p>{{ application.job.company_name }}</p>
+                                <span class="application-meta">Applied {{ application.applied_at|timesince }} ago</span>
+                            </div>
+                        </div>
+                        <div class="application-actions">
+                            <span class="status-badge status-{{ application.status }}">{{ application.get_status_display }}</span>
+                            <a href="{% url 'accounts:applicants' application.job.id %}" class="btn-view">
+                                View Application
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>
+

@@ -9,6 +9,8 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/advanced_styles.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="dashboard-admin">
     <!-- Sidebar -->
@@ -32,9 +34,21 @@
                 <i class="fas fa-briefcase"></i>
                 <span>Jobs</span>
             </a>
-            <a href="{% url 'analytics:platform_analytics' %}" class="nav-item">
+            <a href="{% url 'admin_panel:course_management' %}" class="nav-item">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Courses</span>
+            </a>
+            <a href="{% url 'admin_panel:analytics' %}" class="nav-item">
                 <i class="fas fa-chart-line"></i>
                 <span>Analytics</span>
+            </a>
+            <a href="{% url 'admin_panel:support_tickets' %}" class="nav-item">
+                <i class="fas fa-ticket-alt"></i>
+                <span>Support Tickets</span>
+            </a>
+            <a href="{% url 'admin_panel:system_notifications' %}" class="nav-item">
+                <i class="fas fa-bullhorn"></i>
+                <span>System Notifications</span>
             </a>
             <a href="/admin/" class="nav-item">
                 <i class="fas fa-cog"></i>
@@ -89,7 +103,7 @@
                 <div class="stat-info">
                     <h3>{{ stats.verified_users|default:"0" }}</h3>
                     <p>Verified Users</p>
-                    {% if stats.total_users %}
+                    {% if stats.total_users and stats.verified_users %}
                         {% widthratio stats.verified_users stats.total_users 100 as verification_rate %}
                         <span class="stat-change positive">{{ verification_rate }}% verified</span>
                     {% else %}
@@ -100,12 +114,16 @@
 
             <div class="stat-card admin-stat">
                 <div class="stat-icon admin-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                    <i class="fas fa-envelope"></i>
+                    <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>{{ stats.pending_verifications|default:"0" }}</h3>
-                    <p>Pending Verifications</p>
-                    <span class="stat-change warning">Needs attention</span>
+                    <h3>{{ stats.pending_jobs|default:"0" }}</h3>
+                    <p>Pending Jobs</p>
+                    {% if stats.pending_jobs %}
+                    <span class="stat-change warning">Needs approval</span>
+                    {% else %}
+                    <span class="stat-change positive">All approved</span>
+                    {% endif %}
                 </div>
             </div>
 
@@ -139,6 +157,9 @@
                     <h3>{{ stats.total_courses|default:"0" }}</h3>
                     <p>Courses</p>
                     <span class="stat-change">{{ stats.total_enrollments|default:"0" }} enrollments</span>
+                    {% if stats.pending_courses %}
+                    <span class="stat-change warning" style="margin-top: 0.25rem; display: block;">{{ stats.pending_courses }} pending</span>
+                    {% endif %}
                 </div>
             </div>
 
@@ -154,9 +175,14 @@
                         </div>
                         <div class="overview-content">
                             <h4>User Growth</h4>
-                            <p>{{ stats.total_users }} registered users</p>
+                            <p>{{ stats.total_users|default:"0" }} registered users</p>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: 75%"></div>
+                                {% if stats.total_users %}
+                                    {% widthratio stats.verified_users|default:"0" stats.total_users 100 as growth %}
+                                    <div class="progress-fill" style="width: {{ growth }}%; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);"></div>
+                                {% else %}
+                                    <div class="progress-fill" style="width: 0%;"></div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -166,9 +192,14 @@
                         </div>
                         <div class="overview-content">
                             <h4>Job Postings</h4>
-                            <p>{{ stats.total_jobs }} active jobs</p>
+                            <p>{{ stats.active_jobs|default:"0" }} active jobs</p>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: 60%"></div>
+                                {% if stats.total_jobs %}
+                                    {% widthratio stats.active_jobs|default:"0" stats.total_jobs 100 as job_rate %}
+                                    <div class="progress-fill" style="width: {{ job_rate }}%; background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);"></div>
+                                {% else %}
+                                    <div class="progress-fill" style="width: 0%;"></div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -178,9 +209,14 @@
                         </div>
                         <div class="overview-content">
                             <h4>Verification Rate</h4>
-                            <p>{{ stats.verified_users }}/{{ stats.total_users }} verified</p>
+                            <p>{{ stats.verified_users|default:"0" }}/{{ stats.total_users|default:"0" }} verified</p>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: 85%"></div>
+                                {% if stats.total_users and stats.verified_users %}
+                                    {% widthratio stats.verified_users stats.total_users 100 as verify_rate %}
+                                    <div class="progress-fill" style="width: {{ verify_rate }}%; background: linear-gradient(135deg, #10b981 0%, #059669 100%);"></div>
+                                {% else %}
+                                    <div class="progress-fill" style="width: 0%;"></div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -201,9 +237,17 @@
                         <i class="fas fa-briefcase"></i>
                         <span>Manage Jobs</span>
                     </a>
-                    <a href="{% url 'analytics:platform_analytics' %}" class="action-btn admin-action">
+                    <a href="{% url 'admin_panel:analytics' %}" class="action-btn admin-action">
                         <i class="fas fa-chart-bar"></i>
                         <span>View Analytics</span>
+                    </a>
+                    <a href="{% url 'admin_panel:course_management' %}" class="action-btn admin-action">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Manage Courses</span>
+                    </a>
+                    <a href="{% url 'admin_panel:support_tickets' %}" class="action-btn admin-action">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span>Support Tickets</span>
                     </a>
                     <a href="/admin/" class="action-btn admin-action">
                         <i class="fas fa-cog"></i>
@@ -218,52 +262,88 @@
                     <h2><i class="fas fa-clock"></i> Recent Platform Activity</h2>
                 </div>
                 <div class="activity-list admin-activity">
-                    <div class="activity-item admin-activity-item">
-                        <div class="activity-icon success">
-                            <i class="fas fa-user-plus"></i>
+                    {% if recent_users %}
+                        {% for user in recent_users|slice:":4" %}
+                        <div class="activity-item admin-activity-item">
+                            <div class="activity-icon success">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h4>New User Registered</h4>
+                                <p>{{ user.get_full_name|default:user.username }} ({{ user.get_role_display }})</p>
+                                <span class="activity-time">{{ user.created_at|timesince }} ago</span>
+                            </div>
                         </div>
-                        <div class="activity-content">
-                            <h4>New User Registered</h4>
-                            <p>Job Seeker account created</p>
-                            <span class="activity-time">5 minutes ago</span>
+                        {% endfor %}
+                    {% endif %}
+                    {% if recent_jobs %}
+                        {% for job in recent_jobs|slice:":2" %}
+                        <div class="activity-item admin-activity-item">
+                            <div class="activity-icon info">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h4>New Job Posted</h4>
+                                <p>{{ job.job_title }} at {{ job.company_name }}</p>
+                                <span class="activity-time">{{ job.date_posted|timesince }} ago</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="activity-item admin-activity-item">
-                        <div class="activity-icon info">
-                            <i class="fas fa-briefcase"></i>
-                        </div>
-                        <div class="activity-content">
-                            <h4>New Job Posted</h4>
-                            <p>Software Developer position</p>
-                            <span class="activity-time">1 hour ago</span>
-                        </div>
-                    </div>
+                        {% endfor %}
+                    {% endif %}
+                    {% if stats.pending_verifications and stats.pending_verifications > 0 %}
                     <div class="activity-item admin-activity-item">
                         <div class="activity-icon warning">
                             <i class="fas fa-exclamation-triangle"></i>
                         </div>
                         <div class="activity-content">
                             <h4>Pending Verification</h4>
-                            <p>{{ stats.pending_verifications }} emails pending</p>
-                            <span class="activity-time">2 hours ago</span>
+                            <p>{{ stats.pending_verifications }} emails pending verification</p>
+                            <span class="activity-time">Needs attention</span>
                         </div>
                     </div>
+                    {% endif %}
+                    {% if stats.pending_jobs and stats.pending_jobs > 0 %}
                     <div class="activity-item admin-activity-item">
-                        <div class="activity-icon success">
-                            <i class="fas fa-graduation-cap"></i>
+                        <div class="activity-icon warning">
+                            <i class="fas fa-file-alt"></i>
                         </div>
                         <div class="activity-content">
-                            <h4>Course Enrollment</h4>
-                            <p>New course enrollment registered</p>
-                            <span class="activity-time">3 hours ago</span>
+                            <h4>Pending Job Approvals</h4>
+                            <p>{{ stats.pending_jobs }} jobs waiting for approval</p>
+                            <span class="activity-time"><a href="{% url 'admin_panel:job_management' %}" style="color: var(--primary);">Review now</a></span>
                         </div>
                     </div>
+                    {% endif %}
+                    {% if not recent_users and not recent_jobs %}
+                    <div class="empty-state">
+                        <i class="fas fa-info-circle"></i>
+                        <p>No recent activity</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </main>
 
-    <script src="{% static 'js/dashboard.js' %}"></script>
+    <script>
+        // Add any interactive JavaScript here
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate stat cards on load
+            const statCards = document.querySelectorAll('.admin-stat');
+            statCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.transition = 'all 0.5s ease';
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 50);
+                }, index * 100);
+            });
+        });
+    </script>
 </body>
 </html>
+
 

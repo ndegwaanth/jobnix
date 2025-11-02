@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Courses - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dashboard-youth">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'education:course_list' %}" class="nav-item">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Browse Courses</span>
+            </a>
+            <a href="{% url 'education:my_courses' %}" class="nav-item active">
+                <i class="fas fa-book"></i>
+                <span>My Courses</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>My Courses</h1>
+                <p>Continue your learning journey</p>
+            </div>
+            <div class="topbar-right">
+                <a href="{% url 'education:course_list' %}" class="btn-primary">
+                    <i class="fas fa-search"></i> Browse More Courses
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Stats -->
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total }}</h3>
+                    <p>Total Enrolled</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.in_progress }}</h3>
+                    <p>In Progress</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.completed }}</h3>
+                    <p>Completed</p>
+                </div>
+            </div>
+
+            <!-- Enrolled Courses -->
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-list"></i> My Enrollments</h2>
+                </div>
+                <div class="enrollments-list">
+                    {% if enrollments %}
+                        {% for enrollment in enrollments %}
+                        <div class="enrollment-item" style="background: white; padding: 1.5rem; border-radius: var(--radius); margin-bottom: 1rem; border: 1px solid var(--border-color);">
+                            <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <h3 style="margin: 0 0 0.5rem 0;">{{ enrollment.course.title }}</h3>
+                                    <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary);">{{ enrollment.course.institution.get_full_name|default:enrollment.course.institution.username|default:"JobNix" }}</p>
+                                    <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1rem;">
+                                        <span class="status-badge status-{{ enrollment.status }}">{{ enrollment.get_status_display }}</span>
+                                        <div class="progress-bar" style="flex: 1; max-width: 300px;">
+                                            <div class="progress-fill" style="width: {{ enrollment.progress_percentage }}%; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);"></div>
+                                        </div>
+                                        <span style="font-size: 0.9rem; color: var(--text-secondary);">{{ enrollment.progress_percentage|floatformat:0 }}%</span>
+                                    </div>
+                                    {% if enrollment.last_accessed_at %}
+                                    <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">
+                                        Last accessed: {{ enrollment.last_accessed_at|timesince }} ago
+                                    </p>
+                                    {% endif %}
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <a href="{% url 'education:course_detail' enrollment.course.id %}" class="btn-primary">
+                                        <i class="fas fa-book-open"></i> Continue
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-book"></i>
+                            <h3>No Enrollments Yet</h3>
+                            <p>Start learning by enrolling in courses</p>
+                            <a href="{% url 'education:course_list' %}" class="btn-primary">
+                                <i class="fas fa-search"></i> Browse Courses
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

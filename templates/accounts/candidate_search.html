@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Candidates - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    {% load account_filters %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dashboard-employer">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'accounts:candidate_search' %}" class="nav-item active">
+                <i class="fas fa-search"></i>
+                <span>Search Candidates</span>
+            </a>
+            <a href="{% url 'accounts:saved_candidates' %}" class="nav-item">
+                <i class="fas fa-bookmark"></i>
+                <span>Saved Candidates</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Search Candidates</h1>
+                <p>Find talented candidates for your positions</p>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Search Filters -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-filter"></i> Search Filters</h2>
+                </div>
+                <form method="GET" class="search-form">
+                    <div class="form-group">
+                        <label>Skills</label>
+                        <input type="text" name="skills" value="{{ skills_filter|default:'' }}" placeholder="e.g., Python, JavaScript">
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" name="location" value="{{ location_filter|default:'' }}" placeholder="e.g., Nairobi">
+                    </div>
+                    <div class="form-group">
+                        <label>Education Level</label>
+                        <select name="education">
+                            <option value="">All Levels</option>
+                            <option value="primary" {% if education_filter == 'primary' %}selected{% endif %}>Primary</option>
+                            <option value="secondary" {% if education_filter == 'secondary' %}selected{% endif %}>Secondary</option>
+                            <option value="diploma" {% if education_filter == 'diploma' %}selected{% endif %}>Diploma</option>
+                            <option value="degree" {% if education_filter == 'degree' %}selected{% endif %}>Degree</option>
+                            <option value="masters" {% if education_filter == 'masters' %}selected{% endif %}>Master's</option>
+                            <option value="phd" {% if education_filter == 'phd' %}selected{% endif %}>PhD</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%;">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    <a href="{% url 'accounts:candidate_search' %}" class="btn-secondary" style="width: 100%; margin-top: 0.5rem; display: block; text-align: center;">
+                        Clear Filters
+                    </a>
+                </form>
+            </div>
+
+            <!-- Candidates List -->
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-users"></i> Candidates ({{ candidates|length }})</h2>
+                </div>
+                <div class="candidates-list">
+                    {% if candidates %}
+                        {% for candidate in candidates %}
+                        <div class="candidate-card">
+                            <div class="candidate-header">
+                                <div class="candidate-avatar">{{ candidate.first_name|first|default:candidate.username|first|upper }}</div>
+                                <div class="candidate-info">
+                                    <h3>{{ candidate.get_full_name|default:candidate.username }}</h3>
+                                    <p>{{ candidate.email }}</p>
+                                    {% if candidate.job_seeker_profile and candidate.job_seeker_profile.location %}
+                                    <p><i class="fas fa-map-marker-alt"></i> {{ candidate.job_seeker_profile.location }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if candidate.job_seeker_profile and candidate.job_seeker_profile.skills %}
+                            <div class="candidate-skills">
+                                {% for skill in candidate.job_seeker_profile.skills|split:","|slice:":5" %}
+                                    <span class="skill-tag">{{ skill|trim }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="candidate-actions">
+                                <a href="{% url 'accounts:candidate_profile' candidate.id %}" class="btn-view">
+                                    <i class="fas fa-eye"></i> View Profile
+                                </a>
+                                <form method="POST" action="{% url 'accounts:candidate_profile' candidate.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="save">
+                                    <button type="submit" class="btn-secondary">
+                                        <i class="fas fa-bookmark"></i> Save
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-user-slash"></i>
+                            <h3>No Candidates Found</h3>
+                            <p>Try adjusting your search filters</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

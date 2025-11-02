@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'jobs',
-    'accounts',
+    'accounts.apps.AccountsConfig',  # Use AccountsConfig to enable auto-admin creation
     'admin_panel',
     'analytics',
     'education',
@@ -194,6 +194,10 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Frontend URL for email links
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:8000')
+
+# Admin User Credentials from .env
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', '')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', '')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

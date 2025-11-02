@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Tickets - JobNix Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+</head>
+<body class="dashboard-admin">
+    <!-- Sidebar -->
+    <aside class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>Job<span class="accent">Nix</span> Admin</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin_panel:support_tickets' %}" class="nav-item active">
+                <i class="fas fa-ticket-alt"></i>
+                <span>Support Tickets</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar admin-topbar">
+            <div class="topbar-left">
+                <h1>Support Tickets</h1>
+                <p>Manage user support requests</p>
+            </div>
+            <div class="topbar-right">
+                <div class="filter-group">
+                    <select id="statusFilter" onchange="filterTickets()">
+                        <option value="">All Status</option>
+                        <option value="open">Open</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card admin-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-ticket-alt"></i> All Tickets ({{ tickets|length }})</h2>
+                </div>
+                <div class="tickets-list">
+                    {% if tickets %}
+                        {% for ticket in tickets %}
+                        <div class="ticket-item" data-status="{{ ticket.status }}">
+                            <div class="ticket-header">
+                                <div class="ticket-info">
+                                    <h3>{{ ticket.subject }}</h3>
+                                    <p><strong>From:</strong> {{ ticket.user.get_full_name|default:ticket.user.username }} ({{ ticket.user.email }})</p>
+                                    <span class="ticket-meta">{{ ticket.created_at|timesince }} ago</span>
+                                </div>
+                                <div class="ticket-status">
+                                    <span class="status-badge status-{{ ticket.status }}">{{ ticket.get_status_display }}</span>
+                                    <span class="priority-badge priority-{{ ticket.priority }}">{{ ticket.get_priority_display }}</span>
+                                </div>
+                            </div>
+                            <div class="ticket-message">
+                                <p>{{ ticket.message }}</p>
+                            </div>
+                            {% if ticket.resolution_notes %}
+                            <div class="ticket-resolution">
+                                <strong>Resolution:</strong> {{ ticket.resolution_notes }}
+                            </div>
+                            {% endif %}
+                            <div class="ticket-actions">
+                                {% if ticket.status == 'open' %}
+                                <form method="POST" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="ticket_id" value="{{ ticket.id }}">
+                                    <input type="hidden" name="action" value="assign">
+                                    <button type="submit" class="btn-primary-small">
+                                        <i class="fas fa-user-check"></i> Assign to Me
+                                    </button>
+                                </form>
+                                {% endif %}
+                                {% if ticket.status == 'in_progress' or ticket.status == 'open' %}
+                                <form method="POST" style="display: inline;" id="resolveForm{{ ticket.id }}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="ticket_id" value="{{ ticket.id }}">
+                                    <input type="hidden" name="action" value="resolve">
+                                    <input type="text" name="resolution_notes" placeholder="Resolution notes..." required style="padding: 0.5rem; border-radius: 0.5rem; margin-right: 0.5rem;">
+                                    <button type="submit" class="btn-success-small">
+                                        <i class="fas fa-check"></i> Resolve
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-ticket-alt"></i>
+                            <h3>No Support Tickets</h3>
+                            <p>All tickets have been resolved!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function filterTickets() {
+            const filter = document.getElementById('statusFilter').value;
+            const items = document.querySelectorAll('.ticket-item');
+            items.forEach(item => {
+                if (!filter || item.dataset.status === filter) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

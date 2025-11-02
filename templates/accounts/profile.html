@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    {% load account_filters %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dashboard-youth">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'accounts:profile' %}" class="nav-item active">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+            <a href="{% url 'accounts:profile_edit' %}" class="nav-item">
+                <i class="fas fa-user-edit"></i>
+                <span>Edit Profile</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>My Profile</h1>
+                <p>View and manage your profile information</p>
+            </div>
+            <div class="topbar-right">
+                <a href="{% url 'accounts:profile_edit' %}" class="btn-primary">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Profile Header -->
+            <div class="dashboard-card">
+                <div class="candidate-header-large">
+                    {% if profile.profile_picture %}
+                    <img src="{{ profile.profile_picture.url }}" alt="Profile" class="profile-photo">
+                    {% else %}
+                    <div class="profile-avatar-large">{{ user.first_name|first|default:user.username|first|upper }}</div>
+                    {% endif %}
+                    <div class="candidate-info-large">
+                        <h2>{{ user.get_full_name|default:user.username }}</h2>
+                        <p><i class="fas fa-envelope"></i> {{ user.email }}</p>
+                        {% if user.phone %}
+                        <p><i class="fas fa-phone"></i> {{ user.phone }}</p>
+                        {% endif %}
+                        {% if profile.location %}
+                        <p><i class="fas fa-map-marker-alt"></i> {{ profile.location }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Details -->
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-info-circle"></i> Profile Information</h2>
+                </div>
+                
+                {% if profile.bio %}
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">About Me</h3>
+                    <p style="line-height: 1.8;">{{ profile.bio }}</p>
+                </div>
+                {% endif %}
+
+                {% if profile.education_level %}
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;"><i class="fas fa-graduation-cap"></i> Education</h3>
+                    <p><strong>Education Level:</strong> {{ profile.get_education_level_display|default:profile.education_level|title }}</p>
+                </div>
+                {% endif %}
+
+                {% if profile.skills %}
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;"><i class="fas fa-tools"></i> Skills</h3>
+                    <div class="skills-list">
+                        {% load account_filters %}
+                        {% for skill in profile.skills|split:"," %}
+                            <span class="skill-tag">{{ skill|trim }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if profile.interests %}
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;"><i class="fas fa-heart"></i> Career Interests</h3>
+                    <div class="skills-list">
+                        {% for interest in profile.interests|split:"," %}
+                            <span class="skill-tag">{{ interest|trim }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if profile.resume %}
+                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                    <a href="{{ profile.resume.url }}" download class="btn-download">
+                        <i class="fas fa-download"></i> Download Resume
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+    {% load account_filters %}
+</body>
+</html>
+

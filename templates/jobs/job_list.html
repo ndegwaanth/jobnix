@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Jobs - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/advanced_styles.css' %}">
+</head>
+<body class="dashboard-youth">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'jobs:job_list' %}" class="nav-item active">
+                <i class="fas fa-briefcase"></i>
+                <span>Browse Jobs</span>
+            </a>
+            <a href="{% url 'accounts:applications_list' %}" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>My Applications</span>
+            </a>
+            <a href="{% url 'accounts:saved_jobs' %}" class="nav-item">
+                <i class="fas fa-bookmark"></i>
+                <span>Saved Jobs</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Browse Jobs</h1>
+                <p>Find your next career opportunity</p>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Search & Filters -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-filter"></i> Search & Filter</h2>
+                </div>
+                <form method="GET" class="search-form" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%); padding: 2rem; border-radius: var(--radius-lg); border: 1px solid rgba(99, 102, 241, 0.2);">
+                    <div class="form-group">
+                        <label>Search Jobs</label>
+                        <input type="text" name="search" value="{{ search_query }}" placeholder="Job title, company, location, skills...">
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Work Type</label>
+                            <select name="work_type">
+                                <option value="">All Types</option>
+                                {% for code, name in work_types %}
+                                    <option value="{{ code }}" {% if selected_work_type == code %}selected{% endif %}>{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Experience Level</label>
+                            <select name="experience">
+                                <option value="">All Levels</option>
+                                {% for code, name in experience_levels %}
+                                    <option value="{{ code }}" {% if selected_experience == code %}selected{% endif %}>{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" name="location" value="{{ selected_location }}" placeholder="City, County">
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%;">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    <a href="{% url 'jobs:job_list' %}" class="btn-secondary" style="width: 100%; margin-top: 0.5rem; display: block; text-align: center;">
+                        Clear Filters
+                    </a>
+                </form>
+            </div>
+
+            <!-- Jobs List -->
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-briefcase"></i> Available Jobs ({{ jobs|length }})</h2>
+                </div>
+                <div class="jobs-grid-advanced">
+                    {% if jobs %}
+                        {% for job in jobs %}
+                        <div class="enhanced-card job-card">
+                            <div class="job-card-header">
+                                <div class="company-logo">{{ job.company_name|first|upper }}</div>
+                                <div class="job-info">
+                                    <h3>{{ job.job_title }}</h3>
+                                    <p class="company-name">{{ job.company_name }}</p>
+                                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
+                                        <span><i class="fas fa-map-marker-alt"></i> {{ job.location }}</span>
+                                        <span><i class="fas fa-briefcase"></i> {{ job.get_work_type_display }}</span>
+                                        <span><i class="fas fa-signal"></i> {{ job.get_experience_level_display }}</span>
+                                    </div>
+                                </div>
+                                {% if user.is_authenticated %}
+                                <button class="bookmark-btn {% if job.id in saved_job_ids %}active{% endif %}" onclick="saveJob({{ job.id }})" style="background: transparent; border: none; cursor: pointer;">
+                                    <i class="fas fa-bookmark"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                            <div class="job-details">
+                                <span><i class="fas fa-money-bill"></i> {{ job.salary_display_text }}</span>
+                                <span><i class="fas fa-clock"></i> Posted {{ job.date_posted|timesince }} ago</span>
+                            </div>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 1rem 0;">{{ job.job_description|truncatewords:30 }}</p>
+                            <div class="job-card-footer">
+                                <a href="{% url 'jobs:job_detail' job.id %}" class="btn-apply">
+                                    View Details <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-briefcase"></i>
+                            <h3>No Jobs Found</h3>
+                            <p>Try adjusting your search filters</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function saveJob(jobId) {
+            fetch(`{% url 'jobs:save_job' 0 %}`.replace('0', jobId), {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+            }).then(() => location.reload());
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dashboard-youth">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'accounts:profile_edit' %}" class="nav-item active">
+                <i class="fas fa-user-edit"></i>
+                <span>Edit Profile</span>
+            </a>
+            <a href="{% url 'accounts:profile' %}" class="nav-item">
+                <i class="fas fa-user"></i>
+                <span>View Profile</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Edit Profile</h1>
+                <p>Update your personal information and preferences</p>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-circle"></i> Personal Information</h2>
+                </div>
+                <form method="POST" enctype="multipart/form-data" class="profile-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>First Name</label>
+                                <input type="text" name="first_name" value="{{ user.first_name }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name</label>
+                                <input type="text" name="last_name" value="{{ user.last_name }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" name="email" value="{{ user.email }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="text" name="phone" value="{{ user.phone }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Professional Details</h3>
+                        <div class="form-group">
+                            <label>Education Level</label>
+                            <select name="education_level">
+                                <option value="">Select...</option>
+                                <option value="primary" {% if profile.education_level == 'primary' %}selected{% endif %}>Primary</option>
+                                <option value="secondary" {% if profile.education_level == 'secondary' %}selected{% endif %}>Secondary</option>
+                                <option value="diploma" {% if profile.education_level == 'diploma' %}selected{% endif %}>Diploma</option>
+                                <option value="degree" {% if profile.education_level == 'degree' %}selected{% endif %}>Bachelor's Degree</option>
+                                <option value="masters" {% if profile.education_level == 'masters' %}selected{% endif %}>Master's Degree</option>
+                                <option value="phd" {% if profile.education_level == 'phd' %}selected{% endif %}>PhD</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" name="location" value="{{ profile.location|default:'' }}" placeholder="City, County">
+                        </div>
+                        <div class="form-group">
+                            <label>Skills (comma-separated)</label>
+                            <input type="text" name="skills" value="{{ profile.skills|default:'' }}" placeholder="e.g., Python, JavaScript, Project Management">
+                        </div>
+                        <div class="form-group">
+                            <label>Career Interests</label>
+                            <input type="text" name="interests" value="{{ profile.interests|default:'' }}" placeholder="e.g., Software Development, Data Science">
+                        </div>
+                        <div class="form-group">
+                            <label>Bio</label>
+                            <textarea name="bio" rows="5" placeholder="Tell us about yourself...">{{ profile.bio|default:'' }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Documents & Media</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Profile Picture</label>
+                                {% if profile.profile_picture %}
+                                <div class="current-file">
+                                    <img src="{{ profile.profile_picture.url }}" alt="Current" style="width: 100px; border-radius: 8px;">
+                                </div>
+                                {% endif %}
+                                <input type="file" name="profile_picture" accept="image/*">
+                            </div>
+                            <div class="form-group">
+                                <label>Resume/CV</label>
+                                {% if profile.resume %}
+                                <div class="current-file">
+                                    <a href="{{ profile.resume.url }}" target="_blank">
+                                        <i class="fas fa-file-pdf"></i> Current Resume
+                                    </a>
+                                </div>
+                                {% endif %}
+                                <input type="file" name="resume" accept=".pdf,.doc,.docx">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                        <a href="{% url 'accounts:profile' %}" class="btn-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

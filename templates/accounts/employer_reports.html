@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard-employer">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'accounts:employer_reports' %}" class="nav-item active">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reports</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Reports & Analytics</h1>
+                <p>Hiring insights and performance metrics</p>
+            </div>
+            <div class="topbar-right">
+                <a href="?export=csv" class="btn-primary">
+                    <i class="fas fa-download"></i> Export CSV
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Statistics -->
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_jobs }}</h3>
+                    <p>Total Jobs</p>
+                    <span class="stat-change">{{ stats.active_jobs }} active</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_applications }}</h3>
+                    <p>Total Applications</p>
+                    <span class="stat-change">{{ stats.applications_30_days }} this month</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.hired_count }}</h3>
+                    <p>Hired Candidates</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.pending_applications }}</h3>
+                    <p>Pending Reviews</p>
+                </div>
+            </div>
+
+            <!-- Job Performance -->
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-bar"></i> Job Performance</h2>
+                </div>
+                <div class="performance-table">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: var(--bg-secondary);">
+                                <th style="padding: 1rem; text-align: left;">Job Title</th>
+                                <th style="padding: 1rem; text-align: center;">Applications</th>
+                                <th style="padding: 1rem; text-align: center;">Accepted</th>
+                                <th style="padding: 1rem; text-align: center;">Status</th>
+                                <th style="padding: 1rem; text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for perf in job_performance %}
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem;">{{ perf.job.job_title }}</td>
+                                <td style="padding: 1rem; text-align: center;">{{ perf.total_applications }}</td>
+                                <td style="padding: 1rem; text-align: center;">{{ perf.accepted }}</td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    <span class="status-badge status-{{ perf.job.status }}">{{ perf.job.get_status_display }}</span>
+                                </td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    <a href="{% url 'accounts:job_manage' perf.job.id %}" class="btn-view">
+                                        Manage
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

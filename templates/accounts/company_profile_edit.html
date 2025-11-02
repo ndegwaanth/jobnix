@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Profile - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/advanced_styles.css' %}">
+</head>
+<body class="dashboard-employer">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'accounts:company_profile' %}" class="nav-item active">
+                <i class="fas fa-building"></i>
+                <span>Company Profile</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Company Profile</h1>
+                <p>Manage your company information and branding</p>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-building"></i> Company Information</h2>
+                </div>
+                <form method="POST" enctype="multipart/form-data" class="form-container-advanced">
+                    {% csrf_token %}
+                    
+                    <div class="form-section-advanced">
+                        <h3><i class="fas fa-building"></i> Basic Information</h3>
+                        <div class="form-group-advanced">
+                            <label>Company Name *</label>
+                            <input type="text" name="company_name" value="{{ profile.company_name|default:'' }}" required>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group-advanced">
+                                <label>Industry</label>
+                                <input type="text" name="industry" value="{{ profile.industry|default:'' }}" placeholder="e.g., Technology, Finance">
+                            </div>
+                            <div class="form-group-advanced">
+                                <label>Company Size</label>
+                                <select name="company_size">
+                                    <option value="">Select...</option>
+                                    <option value="1-10" {% if profile.company_size == '1-10' %}selected{% endif %}>1-10 employees</option>
+                                    <option value="11-50" {% if profile.company_size == '11-50' %}selected{% endif %}>11-50 employees</option>
+                                    <option value="51-200" {% if profile.company_size == '51-200' %}selected{% endif %}>51-200 employees</option>
+                                    <option value="201-500" {% if profile.company_size == '201-500' %}selected{% endif %}>201-500 employees</option>
+                                    <option value="500+" {% if profile.company_size == '500+' %}selected{% endif %}>500+ employees</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group-advanced">
+                            <label>Company Description</label>
+                            <textarea name="company_description" rows="5" placeholder="Tell us about your company...">{{ profile.company_description|default:'' }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-section-advanced">
+                        <h3><i class="fas fa-envelope"></i> Contact Information</h3>
+                        <div class="form-grid">
+                            <div class="form-group-advanced">
+                                <label>Website</label>
+                                <input type="url" name="company_website" value="{{ profile.company_website|default:'' }}" placeholder="https://example.com">
+                            </div>
+                            <div class="form-group-advanced">
+                                <label>Location</label>
+                                <input type="text" name="location" value="{{ profile.location|default:'' }}" placeholder="City, County">
+                            </div>
+                            <div class="form-group-advanced">
+                                <label>Contact Email</label>
+                                <input type="email" name="contact_email" value="{{ profile.contact_email|default:'' }}">
+                            </div>
+                            <div class="form-group-advanced">
+                                <label>Contact Phone</label>
+                                <input type="text" name="contact_phone" value="{{ profile.contact_phone|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section-advanced">
+                        <h3><i class="fas fa-palette"></i> Branding</h3>
+                        <div class="form-group-advanced">
+                            <label>Company Logo</label>
+                            {% if profile.company_logo %}
+                            <div class="current-file">
+                                <img src="{{ profile.company_logo.url }}" alt="Current Logo" style="width: 150px; border-radius: 8px;">
+                            </div>
+                            {% endif %}
+                            <input type="file" name="company_logo" accept="image/*">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-premium btn-premium-primary">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                        <a href="{% url 'accounts:dashboard' %}" class="btn-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

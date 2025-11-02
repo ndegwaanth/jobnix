@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applicants - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dashboard-employer">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'accounts:applicants' %}" class="nav-item active">
+                <i class="fas fa-file-alt"></i>
+                <span>Applications</span>
+            </a>
+            <a href="{% url 'accounts:candidate_search' %}" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Search Candidates</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Applicants</h1>
+                <p>Manage and review job applications</p>
+            </div>
+            <div class="topbar-right">
+                <div class="filter-group">
+                    <select id="statusFilter" onchange="filterApplications()">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="reviewing">Reviewing</option>
+                        <option value="shortlisted">Shortlisted</option>
+                        <option value="interview">Interview</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-users"></i> All Applications ({{ applications|length }})</h2>
+                    {% if job %}
+                    <span class="job-title">for {{ job.job_title }}</span>
+                    {% endif %}
+                </div>
+                <div class="applications-list">
+                    {% if applications %}
+                        {% for application in applications %}
+                        <div class="application-item" data-status="{{ application.status }}">
+                            <div class="applicant-info">
+                                <div class="applicant-avatar">{{ application.applicant.first_name|first|default:application.applicant.username|first|upper }}</div>
+                                <div class="applicant-details">
+                                    <h3>{{ application.applicant.get_full_name|default:application.applicant.username }}</h3>
+                                    <p>{{ application.applicant.email }}</p>
+                                    {% if job %}
+                                    <p><strong>Job:</strong> {{ application.job.job_title }}</p>
+                                    {% endif %}
+                                    <span class="application-meta">Applied {{ application.applied_at|timesince }} ago</span>
+                                    {% if application.match_score %}
+                                    <div class="match-score">
+                                        <i class="fas fa-chart-line"></i> {{ application.match_score|floatformat:0 }}% Match
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="application-actions">
+                                <span class="status-badge status-{{ application.status }}">{{ application.get_status_display }}</span>
+                                <form method="POST" style="display: inline-block; margin-left: 1rem;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="application_id" value="{{ application.id }}">
+                                    <input type="hidden" name="action" value="update_status">
+                                    <select name="status" onchange="this.form.submit()" style="padding: 0.5rem; border-radius: 0.5rem; margin-right: 0.5rem;">
+                                        <option value="pending" {% if application.status == 'pending' %}selected{% endif %}>Pending</option>
+                                        <option value="shortlisted" {% if application.status == 'shortlisted' %}selected{% endif %}>Shortlist</option>
+                                        <option value="interview" {% if application.status == 'interview' %}selected{% endif %}>Interview</option>
+                                        <option value="accepted" {% if application.status == 'accepted' %}selected{% endif %}>Accept</option>
+                                        <option value="rejected" {% if application.status == 'rejected' %}selected{% endif %}>Reject</option>
+                                    </select>
+                                </form>
+                                <a href="{% url 'accounts:candidate_profile' application.applicant.id %}" class="btn-view">
+                                    <i class="fas fa-user"></i> View Profile
+                                </a>
+                                <a href="{% url 'accounts:interview_manage' application.id %}" class="btn-secondary">
+                                    <i class="fas fa-calendar"></i> Interview
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-file-alt"></i>
+                            <h3>No Applications</h3>
+                            <p>Applications from candidates will appear here</p>
+                            <a href="{% url 'accounts:job_post_create' %}" class="btn-primary">
+                                <i class="fas fa-plus"></i> Post a Job
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function filterApplications() {
+            const filter = document.getElementById('statusFilter').value;
+            const items = document.querySelectorAll('.application-item');
+            items.forEach(item => {
+                if (!filter || item.dataset.status === filter) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

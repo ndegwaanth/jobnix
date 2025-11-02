@@ -31,7 +31,7 @@
                 <i class="fas fa-graduation-cap"></i>
                 <span>Courses</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="{% url 'accounts:applications_list' %}" class="nav-item">
                 <i class="fas fa-file-alt"></i>
                 <span>My Applications</span>
             </a>
@@ -39,7 +39,23 @@
                 <i class="fas fa-book"></i>
                 <span>My Courses</span>
             </a>
-            <a href="{% url 'analytics:user_analytics' %}" class="nav-item">
+            <a href="{% url 'accounts:saved_jobs' %}" class="nav-item">
+                <i class="fas fa-bookmark"></i>
+                <span>Saved Jobs</span>
+            </a>
+            <a href="{% url 'accounts:certificates' %}" class="nav-item">
+                <i class="fas fa-certificate"></i>
+                <span>Certificates</span>
+            </a>
+            <a href="{% url 'accounts:notifications' %}" class="nav-item">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+            </a>
+            <a href="{% url 'accounts:messages' %}" class="nav-item">
+                <i class="fas fa-envelope"></i>
+                <span>Messages</span>
+            </a>
+            <a href="{% url 'accounts:profile_analytics' %}" class="nav-item">
                 <i class="fas fa-chart-line"></i>
                 <span>Analytics</span>
             </a>
@@ -65,10 +81,10 @@
                 <p>Ready to find your next opportunity?</p>
             </div>
             <div class="topbar-right">
-                <div class="notifications">
+                <a href="{% url 'accounts:notifications' %}" class="notifications">
                     <i class="fas fa-bell"></i>
-                    <span class="badge">3</span>
-                </div>
+                    <span class="badge">{{ unread_notifications|default:"0" }}</span>
+                </a>
                 <div class="user-menu">
                     <img src="https://ui-avatars.com/api/?name={{ user.first_name|default:user.username }}&background=6366f1&color=fff" alt="User" class="avatar">
                     <span>{{ user.first_name|default:user.username }}</span>
@@ -188,7 +204,7 @@
                         <i class="fas fa-search"></i>
                         <span>Search Jobs</span>
                     </a>
-                    <a href="#" class="action-btn">
+                    <a href="{% url 'accounts:resume_builder' %}" class="action-btn">
                         <i class="fas fa-file-alt"></i>
                         <span>Resume Builder</span>
                     </a>
@@ -196,9 +212,13 @@
                         <i class="fas fa-book-open"></i>
                         <span>Explore Courses</span>
                     </a>
-                    <a href="{% url 'analytics:user_analytics' %}" class="action-btn">
+                    <a href="{% url 'accounts:profile_analytics' %}" class="action-btn">
                         <i class="fas fa-chart-bar"></i>
                         <span>View Analytics</span>
+                    </a>
+                    <a href="{% url 'accounts:profile_edit' %}" class="action-btn">
+                        <i class="fas fa-user-edit"></i>
+                        <span>Edit Profile</span>
                     </a>
                     <a href="#" class="action-btn">
                         <i class="fas fa-users"></i>
@@ -216,10 +236,10 @@
                     <div class="progress-item">
                         <div class="progress-label">
                             <span>Profile Completion</span>
-                            <span>85%</span>
+                            <span>{{ profile_completeness|floatformat:0|default:"0" }}%</span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: 85%"></div>
+                            <div class="progress-fill" style="width: {{ profile_completeness|default:"0" }}%"></div>
                         </div>
                     </div>
                     <div class="progress-item">
