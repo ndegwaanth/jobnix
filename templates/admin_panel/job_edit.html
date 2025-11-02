@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Job - JobNix Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+</head>
+<body class="dashboard-admin">
+    <!-- Sidebar -->
+    <aside class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>Job<span class="accent">Nix</span> Admin</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin_panel:job_management' %}" class="nav-item active">
+                <i class="fas fa-briefcase"></i>
+                <span>Jobs</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar admin-topbar">
+            <div class="topbar-left">
+                <h1>Edit Job: {{ job.job_title }}</h1>
+                <p>Update job posting information</p>
+            </div>
+            <div class="topbar-right">
+                <a href="{% url 'admin_panel:job_management' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Jobs
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card admin-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-edit"></i> Job Information</h2>
+                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(99, 102, 241, 0.1); border-radius: var(--radius);">
+                        <p style="margin: 0;"><strong>Applications:</strong> {{ job.applications_count_obj }}</p>
+                        <p style="margin: 0.5rem 0 0;"><strong>Company:</strong> {{ job.company_name }}</p>
+                    </div>
+                </div>
+                <form method="POST" class="form-container">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="job_title">Job Title *</label>
+                        <input type="text" id="job_title" name="job_title" value="{{ job.job_title }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="company_name">Company Name *</label>
+                        <input type="text" id="company_name" name="company_name" value="{{ job.company_name }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="job_description">Job Description *</label>
+                        <textarea id="job_description" name="job_description" rows="8" required>{{ job.job_description }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="qualifications">Qualifications *</label>
+                        <textarea id="qualifications" name="qualifications" rows="4" required>{{ job.qualifications }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skills_required">Skills Required (comma-separated) *</label>
+                        <input type="text" id="skills_required" name="skills_required" value="{{ job.skills_required }}" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="location">Location *</label>
+                            <input type="text" id="location" name="location" value="{{ job.location }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="is_remote" name="is_remote" {% if job.is_remote %}checked{% endif %}>
+                                <span>Remote Position</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="work_type">Work Type *</label>
+                            <select id="work_type" name="work_type" required>
+                                <option value="full_time" {% if job.work_type == 'full_time' %}selected{% endif %}>Full-time</option>
+                                <option value="part_time" {% if job.work_type == 'part_time' %}selected{% endif %}>Part-time</option>
+                                <option value="contract" {% if job.work_type == 'contract' %}selected{% endif %}>Contract</option>
+                                <option value="internship" {% if job.work_type == 'internship' %}selected{% endif %}>Internship</option>
+                                <option value="apprenticeship" {% if job.work_type == 'apprenticeship' %}selected{% endif %}>Apprenticeship</option>
+                                <option value="freelance" {% if job.work_type == 'freelance' %}selected{% endif %}>Freelance</option>
+                                <option value="remote" {% if job.work_type == 'remote' %}selected{% endif %}>Remote</option>
+                                <option value="hybrid" {% if job.work_type == 'hybrid' %}selected{% endif %}>Hybrid</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="experience_level">Experience Level *</label>
+                            <select id="experience_level" name="experience_level" required>
+                                <option value="entry" {% if job.experience_level == 'entry' %}selected{% endif %}>Entry Level</option>
+                                <option value="mid" {% if job.experience_level == 'mid' %}selected{% endif %}>Mid Level</option>
+                                <option value="senior" {% if job.experience_level == 'senior' %}selected{% endif %}>Senior Level</option>
+                                <option value="executive" {% if job.experience_level == 'executive' %}selected{% endif %}>Executive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="years_of_experience">Years of Experience</label>
+                            <input type="number" id="years_of_experience" name="years_of_experience" min="0" max="50" value="{{ job.years_of_experience }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="salary_currency">Salary Currency</label>
+                            <select id="salary_currency" name="salary_currency">
+                                <option value="USD" {% if job.salary_currency == 'USD' %}selected{% endif %}>USD ($)</option>
+                                <option value="KES" {% if job.salary_currency == 'KES' or not job.salary_currency %}selected{% endif %}>KES (KSh)</option>
+                                <option value="EUR" {% if job.salary_currency == 'EUR' %}selected{% endif %}>EUR (€)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="salary_range_min">Salary Range Min</label>
+                            <input type="number" id="salary_range_min" name="salary_range_min" step="0.01" min="0" value="{{ job.salary_range_min|default_if_none:'' }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="salary_range_max">Salary Range Max</label>
+                            <input type="number" id="salary_range_max" name="salary_range_max" step="0.01" min="0" value="{{ job.salary_range_max|default_if_none:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="salary_display">Salary Display (Alternative)</label>
+                        <input type="text" id="salary_display" name="salary_display" value="{{ job.salary_display }}">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="application_link">Application Link</label>
+                            <input type="url" id="application_link" name="application_link" value="{{ job.application_link }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="application_deadline">Application Deadline</label>
+                            <input type="datetime-local" id="application_deadline" name="application_deadline" value="{% if job.application_deadline %}{{ job.application_deadline|date:'Y-m-d\TH:i' }}{% endif %}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="application_instructions">Application Instructions</label>
+                        <textarea id="application_instructions" name="application_instructions" rows="3">{{ job.application_instructions }}</textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="status">Status *</label>
+                            <select id="status" name="status" required>
+                                <option value="draft" {% if job.status == 'draft' %}selected{% endif %}>Draft</option>
+                                <option value="pending" {% if job.status == 'pending' %}selected{% endif %}>Pending Approval</option>
+                                <option value="active" {% if job.status == 'active' %}selected{% endif %}>Active</option>
+                                <option value="closed" {% if job.status == 'closed' %}selected{% endif %}>Closed</option>
+                                <option value="expired" {% if job.status == 'expired' %}selected{% endif %}>Expired</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="is_active" name="is_active" {% if job.is_active %}checked{% endif %}>
+                                <span>Active</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="is_featured" name="is_featured" {% if job.is_featured %}checked{% endif %}>
+                                <span>Featured</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Job
+                        </button>
+                        <a href="{% url 'admin_panel:job_management' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

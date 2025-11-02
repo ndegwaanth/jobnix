@@ -80,6 +80,9 @@ class Enrollment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments', limit_choices_to={'role': 'youth'})
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
     
+    # Payment tracking
+    payment = models.ForeignKey('Payment', on_delete=models.SET_NULL, null=True, blank=True, related_name='enrollments')
+    
     # Progress
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='enrolled')
     progress_percentage = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])
@@ -97,6 +100,60 @@ class Enrollment(models.Model):
     
     def __str__(self):
         return f"{self.user.username} enrolled in {self.course.title}"
+
+
+class Payment(models.Model):
+    """Payment/Transaction model for paid courses"""
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+    ]
+    
+    PAYMENT_METHOD_CHOICES = [
+        ('mpesa', 'M-Pesa'),
+        ('card', 'Credit/Debit Card'),
+        ('bank_transfer', 'Bank Transfer'),
+        ('paypal', 'PayPal'),
+        ('other', 'Other'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments', limit_choices_to={'role': 'youth'})
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='payments')
+    
+    # Payment details
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=10, default='USD')
+    payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES, default='mpesa')
+    transaction_id = models.CharField(max_length=100, unique=True, blank=True, db_index=True)
+    
+    # Status
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
+    # Metadata
+    payment_date = models.DateTimeField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'payments'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', 'created_at']),
+            models.Index(fields=['course', 'status']),
+        ]
+    
+    def __str__(self):
+        return f"Payment {self.transaction_id} - {self.user.username} - ${self.amount}"
+    
+    def save(self, *args, **kwargs):
+        if not self.transaction_id:
+            import uuid
+            self.transaction_id = f"TXN-{str(uuid.uuid4())[:12].upper()}"
+        super().save(*args, **kwargs)
 
 
 class Certificate(models.Model):

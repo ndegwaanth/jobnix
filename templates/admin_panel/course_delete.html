@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Course - JobNix Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+</head>
+<body class="dashboard-admin">
+    <!-- Sidebar -->
+    <aside class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>Job<span class="accent">Nix</span> Admin</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin_panel:course_management' %}" class="nav-item active">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Courses</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar admin-topbar">
+            <div class="topbar-left">
+                <h1>Delete Course</h1>
+                <p>Confirm course deletion</p>
+            </div>
+            <div class="topbar-right">
+                <a href="{% url 'admin_panel:course_management' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Courses
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card admin-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i> Confirm Deletion</h2>
+                </div>
+                <div class="form-container" style="padding: 2rem;">
+                    <div style="background: rgba(239, 68, 68, 0.1); padding: 1.5rem; border-radius: var(--radius); border-left: 4px solid #ef4444; margin-bottom: 1.5rem;">
+                        <h3 style="color: #ef4444; margin-bottom: 0.5rem;">
+                            <i class="fas fa-warning"></i> Warning: This action cannot be undone!
+                        </h3>
+                        <p style="margin: 0; color: var(--text-secondary);">
+                            You are about to delete the course <strong>"{{ course.title }}"</strong>. 
+                            This will permanently remove the course and all associated data including enrollments and payments.
+                        </p>
+                    </div>
+
+                    <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: var(--radius); margin-bottom: 1.5rem;">
+                        <h4 style="margin-bottom: 1rem;">Course Details:</h4>
+                        <p><strong>Title:</strong> {{ course.title }}</p>
+                        <p><strong>Category:</strong> {{ course.category|default:"N/A" }}</p>
+                        <p><strong>Level:</strong> {{ course.get_level_display }}</p>
+                        <p><strong>Price:</strong> {% if course.is_free %}FREE{% else %}${{ course.price|floatformat:2 }}{% endif %}</p>
+                        <p><strong>Status:</strong> {{ course.get_status_display }}</p>
+                        <p><strong>Enrollments:</strong> {{ course.enrollments.count }}</p>
+                    </div>
+
+                    <form method="POST" class="form-actions">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Yes, Delete Course
+                        </button>
+                        <a href="{% url 'admin_panel:course_management' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

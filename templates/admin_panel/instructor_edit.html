@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Instructor - JobNix Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+</head>
+<body class="dashboard-admin">
+    <!-- Sidebar -->
+    <aside class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>Job<span class="accent">Nix</span> Admin</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin_panel:instructor_management' %}" class="nav-item active">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>Instructors</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar admin-topbar">
+            <div class="topbar-left">
+                <h1>Edit Instructor: {{ instructor.get_full_name|default:instructor.username }}</h1>
+                <p>Update instructor information</p>
+            </div>
+            <div class="topbar-right">
+                <a href="{% url 'admin_panel:instructor_management' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Instructors
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card admin-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-edit"></i> Instructor Information</h2>
+                </div>
+                <form method="POST" class="form-container">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="username">Username *</label>
+                            <input type="text" id="username" name="username" value="{{ instructor.username }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" name="email" value="{{ instructor.email }}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="first_name">First Name</label>
+                            <input type="text" id="first_name" name="first_name" value="{{ instructor.first_name }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="last_name">Last Name</label>
+                            <input type="text" id="last_name" name="last_name" value="{{ instructor.last_name }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">New Password (leave blank to keep current)</label>
+                        <input type="password" id="password" name="password" placeholder="Enter new password">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="is_active" name="is_active" {% if instructor.is_active %}checked{% endif %}>
+                            <span>Active</span>
+                        </label>
+                    </div>
+
+                    {% if instructor.role == 'employer' and instructor.employer_profile %}
+                    <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border-color);">
+                    <h3 style="margin-bottom: 1rem;">Employer Profile</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="company_name">Company Name</label>
+                            <input type="text" id="company_name" name="company_name" value="{{ instructor.employer_profile.company_name }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" name="location" value="{{ instructor.employer_profile.location }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="text" id="phone" name="phone" value="{{ instructor.employer_profile.contact_phone }}">
+                    </div>
+                    {% elif instructor.role == 'institution' and instructor.institution_profile %}
+                    <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border-color);">
+                    <h3 style="margin-bottom: 1rem;">Institution Profile</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="institution_name">Institution Name</label>
+                            <input type="text" id="institution_name" name="institution_name" value="{{ instructor.institution_profile.institution_name }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" name="location" value="{{ instructor.institution_profile.location }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="text" id="phone" name="phone" value="{{ instructor.institution_profile.contact_phone }}">
+                    </div>
+                    {% endif %}
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Instructor
+                        </button>
+                        <a href="{% url 'admin_panel:instructor_management' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

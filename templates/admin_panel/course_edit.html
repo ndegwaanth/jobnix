@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Course - JobNix Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+</head>
+<body class="dashboard-admin">
+    <!-- Sidebar -->
+    <aside class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>Job<span class="accent">Nix</span> Admin</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin_panel:course_management' %}" class="nav-item active">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Courses</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar admin-topbar">
+            <div class="topbar-left">
+                <h1>Edit Course: {{ course.title }}</h1>
+                <p>Update course information</p>
+            </div>
+            <div class="topbar-right">
+                <a href="{% url 'admin_panel:course_management' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Courses
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card admin-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-edit"></i> Course Information</h2>
+                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(99, 102, 241, 0.1); border-radius: var(--radius);">
+                        <p style="margin: 0;"><strong>Earnings:</strong> ${{ course.total_earnings|floatformat:2 }}</p>
+                        <p style="margin: 0.5rem 0 0;"><strong>Enrollments:</strong> {{ course.enrollments_count_obj }}</p>
+                    </div>
+                </div>
+                <form method="POST" class="form-container">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="title">Course Title *</label>
+                        <input type="text" id="title" name="title" value="{{ course.title }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description *</label>
+                        <textarea id="description" name="description" rows="6" required>{{ course.description }}</textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <input type="text" id="category" name="category" value="{{ course.category }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="level">Level *</label>
+                            <select id="level" name="level" required>
+                                <option value="beginner" {% if course.level == 'beginner' %}selected{% endif %}>Beginner</option>
+                                <option value="intermediate" {% if course.level == 'intermediate' %}selected{% endif %}>Intermediate</option>
+                                <option value="advanced" {% if course.level == 'advanced' %}selected{% endif %}>Advanced</option>
+                                <option value="expert" {% if course.level == 'expert' %}selected{% endif %}>Expert</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="duration_hours">Duration (Hours)</label>
+                            <input type="number" id="duration_hours" name="duration_hours" min="0" value="{{ course.duration_hours }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="instructor">Instructor</label>
+                            <select id="instructor" name="instructor">
+                                <option value="">Select Instructor</option>
+                                {% for instructor in instructors %}
+                                <option value="{{ instructor.id }}" {% if course.instructor.id == instructor.id %}selected{% endif %}>
+                                    {{ instructor.get_full_name|default:instructor.username }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skills_taught">Skills Taught (comma-separated)</label>
+                        <input type="text" id="skills_taught" name="skills_taught" value="{{ course.skills_taught }}">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="price">Price (USD) *</label>
+                            <input type="number" id="price" name="price" step="0.01" min="0" value="{{ course.price|floatformat:2 }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="is_free" name="is_free" {% if course.is_free %}checked{% endif %} onchange="togglePriceField()">
+                                <span>Free Course</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="status">Status *</label>
+                            <select id="status" name="status" required>
+                                <option value="draft" {% if course.status == 'draft' %}selected{% endif %}>Draft</option>
+                                <option value="pending" {% if course.status == 'pending' %}selected{% endif %}>Pending Approval</option>
+                                <option value="active" {% if course.status == 'active' %}selected{% endif %}>Active</option>
+                                <option value="completed" {% if course.status == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="archived" {% if course.status == 'archived' %}selected{% endif %}>Archived</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="is_active" name="is_active" {% if course.is_active %}checked{% endif %}>
+                                <span>Active</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Course
+                        </button>
+                        <a href="{% url 'admin_panel:course_management' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+                
+                <!-- Course Content Management -->
+                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid var(--border-color);">
+                    <div class="card-header">
+                        <h3><i class="fas fa-video"></i> Course Content (Modules, Videos, Documents)</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">
+                            Add videos, video links, documents, external resources, and text content to this course
+                        </p>
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                        <a href="/admin/education/coursemodule/?course__id__exact={{ course.id }}" class="btn btn-primary" target="_blank">
+                            <i class="fas fa-plus"></i> Add Module & Content (Django Admin)
+                        </a>
+                        <a href="/admin/education/coursecontent/?course__id__exact={{ course.id }}" class="btn btn-secondary" target="_blank">
+                            <i class="fas fa-file-alt"></i> Manage Content Directly
+                        </a>
+                    </div>
+                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(99, 102, 241, 0.05); border-radius: var(--radius);">
+                        <h4 style="margin-bottom: 0.5rem;">Current Content:</h4>
+                        {% if course.modules.all %}
+                            <ul style="list-style: none; padding: 0;">
+                                {% for module in course.modules.all %}
+                                <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                                    <strong>{{ module.title }}</strong> 
+                                    <span style="color: var(--text-secondary); font-size: 0.85rem;">
+                                        - {{ module.contents.count }} content item{{ module.contents.count|pluralize }}
+                                    </span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p style="color: var(--text-secondary); margin: 0;">No modules or content added yet. Use Django Admin to add content.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function togglePriceField() {
+            const isFree = document.getElementById('is_free').checked;
+            const priceField = document.getElementById('price');
+            if (isFree) {
+                priceField.value = '0.00';
+                priceField.disabled = true;
+            } else {
+                priceField.disabled = false;
+            }
+        }
+        
+        // Initialize on page load
+        togglePriceField();
+    </script>
+</body>
+</html>
+

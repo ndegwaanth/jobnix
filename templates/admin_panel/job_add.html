@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Job - JobNix Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+</head>
+<body class="dashboard-admin">
+    <!-- Sidebar -->
+    <aside class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>Job<span class="accent">Nix</span> Admin</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin_panel:job_management' %}" class="nav-item active">
+                <i class="fas fa-briefcase"></i>
+                <span>Jobs</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar admin-topbar">
+            <div class="topbar-left">
+                <h1>Add New Job</h1>
+                <p>Create a new job posting</p>
+            </div>
+            <div class="topbar-right">
+                <a href="{% url 'admin_panel:job_management' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Jobs
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card admin-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-plus-circle"></i> Job Information</h2>
+                </div>
+                <form method="POST" class="form-container">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="job_title">Job Title *</label>
+                        <input type="text" id="job_title" name="job_title" required placeholder="e.g., Software Developer">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="company_name">Company Name *</label>
+                            <input type="text" id="company_name" name="company_name" required placeholder="Company name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="company_email">Company Email *</label>
+                            <input type="email" id="company_email" name="company_email" required placeholder="company@example.com">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="job_description">Job Description *</label>
+                        <textarea id="job_description" name="job_description" rows="8" required placeholder="Detailed job description"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="qualifications">Qualifications *</label>
+                        <textarea id="qualifications" name="qualifications" rows="4" required placeholder="Required qualifications"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skills_required">Skills Required (comma-separated) *</label>
+                        <input type="text" id="skills_required" name="skills_required" required placeholder="e.g., Python, Django, JavaScript">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="location">Location *</label>
+                            <input type="text" id="location" name="location" required placeholder="e.g., Nairobi, Kenya">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="is_remote" name="is_remote">
+                                <span>Remote Position</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="work_type">Work Type *</label>
+                            <select id="work_type" name="work_type" required>
+                                <option value="full_time">Full-time</option>
+                                <option value="part_time">Part-time</option>
+                                <option value="contract">Contract</option>
+                                <option value="internship">Internship</option>
+                                <option value="apprenticeship">Apprenticeship</option>
+                                <option value="freelance">Freelance</option>
+                                <option value="remote">Remote</option>
+                                <option value="hybrid">Hybrid</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="experience_level">Experience Level *</label>
+                            <select id="experience_level" name="experience_level" required>
+                                <option value="entry">Entry Level</option>
+                                <option value="mid">Mid Level</option>
+                                <option value="senior">Senior Level</option>
+                                <option value="executive">Executive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="years_of_experience">Years of Experience</label>
+                            <input type="number" id="years_of_experience" name="years_of_experience" min="0" max="50" value="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="salary_currency">Salary Currency</label>
+                            <select id="salary_currency" name="salary_currency">
+                                <option value="USD">USD ($)</option>
+                                <option value="KES" selected>KES (KSh)</option>
+                                <option value="EUR">EUR (€)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="salary_range_min">Salary Range Min</label>
+                            <input type="number" id="salary_range_min" name="salary_range_min" step="0.01" min="0" placeholder="0.00">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="salary_range_max">Salary Range Max</label>
+                            <input type="number" id="salary_range_max" name="salary_range_max" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="salary_display">Salary Display (Alternative)</label>
+                        <input type="text" id="salary_display" name="salary_display" placeholder="e.g., Competitive, Negotiable">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="application_link">Application Link</label>
+                            <input type="url" id="application_link" name="application_link" placeholder="https://...">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="application_deadline">Application Deadline</label>
+                            <input type="datetime-local" id="application_deadline" name="application_deadline">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="application_instructions">Application Instructions</label>
+                        <textarea id="application_instructions" name="application_instructions" rows="3" placeholder="How to apply instructions"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="status">Status *</label>
+                            <select id="status" name="status" required>
+                                <option value="draft">Draft</option>
+                                <option value="pending" selected>Pending Approval</option>
+                                <option value="active">Active</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="is_active" name="is_active" checked>
+                                <span>Active</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="is_featured" name="is_featured">
+                                <span>Featured</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Create Job
+                        </button>
+                        <a href="{% url 'admin_panel:job_management' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

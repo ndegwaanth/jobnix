@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructor Management - JobNix Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+</head>
+<body class="dashboard-admin">
+    <!-- Sidebar -->
+    <aside class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>Job<span class="accent">Nix</span> Admin</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin_panel:instructor_management' %}" class="nav-item active">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>Instructors</span>
+            </a>
+            <a href="{% url 'admin_panel:course_management' %}" class="nav-item">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Courses</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar admin-topbar">
+            <div class="topbar-left">
+                <h1>Instructor Management</h1>
+                <p>Manage course instructors and institutions</p>
+            </div>
+            <div class="topbar-right">
+                <a href="{% url 'admin_panel:instructor_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Instructor
+                </a>
+                <div class="filter-group">
+                    <form method="GET" style="display: flex; gap: 0.5rem;">
+                        <input type="text" name="search" placeholder="Search..." value="{{ search }}" style="padding: 0.5rem; border-radius: var(--radius); border: 1px solid var(--border-color);">
+                        <select name="role" style="padding: 0.5rem; border-radius: var(--radius); border: 1px solid var(--border-color);">
+                            <option value="" {% if not role_filter %}selected{% endif %}>All Roles</option>
+                            <option value="institution" {% if role_filter == 'institution' %}selected{% endif %}>Institution</option>
+                            <option value="employer" {% if role_filter == 'employer' %}selected{% endif %}>Employer</option>
+                        </select>
+                        <button type="submit" class="btn btn-secondary">
+                            <i class="fas fa-search"></i> Filter
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card admin-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-chalkboard-teacher"></i> All Instructors ({{ instructors|length }})</h2>
+                </div>
+                <div class="instructors-table">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: var(--bg-secondary);">
+                                <th style="padding: 1rem; text-align: left;">Name</th>
+                                <th style="padding: 1rem; text-align: left;">Email</th>
+                                <th style="padding: 1rem; text-align: center;">Role</th>
+                                <th style="padding: 1rem; text-align: center;">Courses</th>
+                                <th style="padding: 1rem; text-align: center;">Status</th>
+                                <th style="padding: 1rem; text-align: center;">Created</th>
+                                <th style="padding: 1rem; text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for instructor in instructors %}
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem;">
+                                    <strong>{{ instructor.get_full_name|default:instructor.username }}</strong>
+                                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">{{ instructor.username }}</p>
+                                </td>
+                                <td style="padding: 1rem;">{{ instructor.email }}</td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    <span class="status-badge {% if instructor.role == 'institution' %}status-info{% else %}status-warning{% endif %}">
+                                        {{ instructor.get_role_display|title }}
+                                    </span>
+                                </td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    {% if instructor.role == 'institution' %}
+                                        {{ instructor.courses.count }}
+                                    {% else %}
+                                        {{ instructor.instructor_courses.count }}
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    <span class="status-badge {% if instructor.is_active %}status-success{% else %}status-danger{% endif %}">
+                                        {% if instructor.is_active %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </td>
+                                <td style="padding: 1rem; text-align: center;">{{ instructor.created_at|date:"M d, Y" }}</td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    <div class="action-buttons" style="display: flex; gap: 0.5rem; justify-content: center;">
+                                        <a href="{% url 'admin_panel:instructor_edit' instructor.id %}" class="btn btn-sm btn-primary" style="text-decoration: none;">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                                    <div class="empty-state">
+                                        <i class="fas fa-user-slash"></i>
+                                        <p>No instructors found</p>
+                                        <a href="{% url 'admin_panel:instructor_add' %}" class="btn btn-primary">
+                                            <i class="fas fa-plus"></i> Add First Instructor
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

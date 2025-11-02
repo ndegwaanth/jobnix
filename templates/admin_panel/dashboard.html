@@ -38,6 +38,10 @@
                 <i class="fas fa-graduation-cap"></i>
                 <span>Courses</span>
             </a>
+            <a href="{% url 'admin_panel:instructor_management' %}" class="nav-item">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>Instructors</span>
+            </a>
             <a href="{% url 'admin_panel:analytics' %}" class="nav-item">
                 <i class="fas fa-chart-line"></i>
                 <span>Analytics</span>
@@ -157,9 +161,25 @@
                     <h3>{{ stats.total_courses|default:"0" }}</h3>
                     <p>Courses</p>
                     <span class="stat-change">{{ stats.total_enrollments|default:"0" }} enrollments</span>
+                    <div class="stat-breakdown">
+                        <span>{{ stats.free_courses_count|default:"0" }} Free</span>
+                        <span>{{ stats.paid_courses_count|default:"0" }} Paid</span>
+                    </div>
                     {% if stats.pending_courses %}
                     <span class="stat-change warning" style="margin-top: 0.25rem; display: block;">{{ stats.pending_courses }} pending</span>
                     {% endif %}
+                </div>
+            </div>
+
+            <div class="stat-card admin-stat">
+                <div class="stat-icon admin-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>${{ stats.total_earnings|floatformat:2|default:"0.00" }}</h3>
+                    <p>Total Earnings</p>
+                    <span class="stat-change positive">${{ stats.monthly_earnings|floatformat:2|default:"0.00" }} this month</span>
+                    <span class="stat-change" style="margin-top: 0.25rem; display: block; font-size: 0.75rem;">{{ stats.total_payments|default:"0" }} completed payments</span>
                 </div>
             </div>
 

@@ -615,6 +615,16 @@ def saved_jobs_view(request):
     
     from jobs.models import SavedJob
     
+    if request.method == 'POST' and request.POST.get('action') == 'delete':
+        saved_job_id = request.POST.get('saved_job_id')
+        try:
+            saved_job = SavedJob.objects.get(id=saved_job_id, user=request.user)
+            saved_job.delete()
+            messages.success(request, 'Job removed from saved')
+            return redirect('accounts:saved_jobs')
+        except SavedJob.DoesNotExist:
+            messages.error(request, 'Saved job not found')
+    
     saved_jobs = SavedJob.objects.filter(user=request.user).select_related('job')
     
     context = {'saved_jobs': saved_jobs}
@@ -629,6 +639,16 @@ def saved_courses_view(request):
         return redirect('accounts:dashboard')
     
     from education.models import SavedCourse
+    
+    if request.method == 'POST' and request.POST.get('action') == 'delete':
+        saved_course_id = request.POST.get('saved_course_id')
+        try:
+            saved_course = SavedCourse.objects.get(id=saved_course_id, user=request.user)
+            saved_course.delete()
+            messages.success(request, 'Course removed from saved')
+            return redirect('accounts:saved_courses')
+        except SavedCourse.DoesNotExist:
+            messages.error(request, 'Saved course not found')
     
     saved_courses = SavedCourse.objects.filter(user=request.user).select_related('course')
     

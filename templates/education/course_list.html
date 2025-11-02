@@ -119,7 +119,15 @@
                             <div class="course-header">
                                 <div class="course-info">
                                     <h3>{{ course.title }}</h3>
-                                    <p class="company-name">{{ course.institution.get_full_name|default:course.institution.username|default:"JobNix" }}</p>
+                                    <p class="company-name">
+                                        {% if course.instructor %}
+                                            {{ course.instructor.get_full_name|default:course.instructor.username }}
+                                        {% elif course.institution %}
+                                            {{ course.institution.get_full_name|default:course.institution.username }}
+                                        {% else %}
+                                            JobNix
+                                        {% endif %}
+                                    </p>
                                     {% if course.category %}
                                     <span class="category-badge">{{ course.category|title }}</span>
                                     {% endif %}

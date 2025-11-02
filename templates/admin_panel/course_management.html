@@ -28,6 +28,10 @@
                 <i class="fas fa-graduation-cap"></i>
                 <span>Courses</span>
             </a>
+            <a href="{% url 'admin_panel:instructor_management' %}" class="nav-item">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>Instructors</span>
+            </a>
             <a href="{% url 'admin_panel:analytics' %}" class="nav-item">
                 <i class="fas fa-chart-line"></i>
                 <span>Analytics</span>
@@ -49,12 +53,20 @@
                 <p>Approve and manage training courses</p>
             </div>
             <div class="topbar-right">
+                <a href="{% url 'admin_panel:course_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Course
+                </a>
                 <div class="filter-group">
                     <select id="statusFilter" onchange="filterCourses()">
-                        <option value="">All Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="active">Active</option>
-                        <option value="archived">Archived</option>
+                        <option value="" {% if not status_filter %}selected{% endif %}>All Status</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                        <option value="archived" {% if status_filter == 'archived' %}selected{% endif %}>Archived</option>
+                    </select>
+                    <select id="pricingFilter" onchange="filterPricing()">
+                        <option value="" {% if not pricing_filter %}selected{% endif %}>All Pricing</option>
+                        <option value="free" {% if pricing_filter == 'free' %}selected{% endif %}>Free</option>
+                        <option value="paid" {% if pricing_filter == 'paid' %}selected{% endif %}>Paid</option>
                     </select>
                 </div>
             </div>
@@ -70,8 +82,10 @@
                         <thead>
                             <tr style="background: var(--bg-secondary);">
                                 <th style="padding: 1rem; text-align: left;">Course Title</th>
-                                <th style="padding: 1rem; text-align: left;">Institution</th>
+                                <th style="padding: 1rem; text-align: left;">Instructor</th>
                                 <th style="padding: 1rem; text-align: center;">Level</th>
+                                <th style="padding: 1rem; text-align: center;">Price</th>
+                                <th style="padding: 1rem; text-align: center;">Earnings</th>
                                 <th style="padding: 1rem; text-align: center;">Status</th>
                                 <th style="padding: 1rem; text-align: center;">Enrollments</th>
                                 <th style="padding: 1rem; text-align: center;">Posted</th>
@@ -80,26 +94,39 @@
                         </thead>
                         <tbody>
                             {% for course in courses %}
-                            <tr style="border-bottom: 1px solid var(--border-color);" data-status="{{ course.status }}">
+                            <tr style="border-bottom: 1px solid var(--border-color);" data-status="{{ course.status }}" data-pricing="{% if course.is_free %}free{% else %}paid{% endif %}">
                                 <td style="padding: 1rem;">
                                     <strong>{{ course.title }}</strong>
                                     <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">{{ course.category|default:"General" }}</p>
                                 </td>
-                                <td style="padding: 1rem;">{{ course.institution.username|default:"N/A" }}</td>
+                                <td style="padding: 1rem;">{{ course.instructor.get_full_name|default:course.instructor.username|default:"N/A" }}</td>
                                 <td style="padding: 1rem; text-align: center;">{{ course.get_level_display }}</td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    {% if course.is_free %}
+                                        <span class="status-badge status-success">FREE</span>
+                                    {% else %}
+                                        <strong style="color: var(--primary);">${{ course.price|floatformat:2 }}</strong>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    <strong style="color: #10b981;">${{ course.total_earnings|floatformat:2|default:"0.00" }}</strong>
+                                </td>
                                 <td style="padding: 1rem; text-align: center;">
                                     <span class="status-badge status-{{ course.status }}">{{ course.get_status_display }}</span>
                                 </td>
-                                <td style="padding: 1rem; text-align: center;">{{ course.enrollments_count }}</td>
+                                <td style="padding: 1rem; text-align: center;">{{ course.enrollments_count_obj|default:course.enrollments_count }}</td>
                                 <td style="padding: 1rem; text-align: center;">{{ course.created_at|date:"M d, Y" }}</td>
                                 <td style="padding: 1rem; text-align: center;">
-                                    <div class="action-buttons">
+                                    <div class="action-buttons" style="display: flex; gap: 0.5rem; justify-content: center;">
+                                        <a href="{% url 'admin_panel:course_edit' course.id %}" class="btn btn-sm btn-primary" style="text-decoration: none;">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
                                         {% if course.status == 'pending' %}
                                         <form method="POST" style="display: inline;">
                                             {% csrf_token %}
                                             <input type="hidden" name="course_id" value="{{ course.id }}">
                                             <input type="hidden" name="action" value="approve">
-                                            <button type="submit" class="btn-success-small">
+                                            <button type="submit" class="btn btn-sm btn-success">
                                                 <i class="fas fa-check"></i> Approve
                                             </button>
                                         </form>
@@ -107,19 +134,14 @@
                                             {% csrf_token %}
                                             <input type="hidden" name="course_id" value="{{ course.id }}">
                                             <input type="hidden" name="action" value="reject">
-                                            <button type="submit" class="btn-danger-small">
+                                            <button type="submit" class="btn btn-sm btn-warning">
                                                 <i class="fas fa-times"></i> Reject
                                             </button>
                                         </form>
                                         {% endif %}
-                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this course?');">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="course_id" value="{{ course.id }}">
-                                            <input type="hidden" name="action" value="delete">
-                                            <button type="submit" class="btn-danger-small">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
+                                        <a href="{% url 'admin_panel:course_delete' course.id %}" class="btn btn-sm btn-danger" style="text-decoration: none;">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -133,16 +155,33 @@
 
     <script>
         function filterCourses() {
-            const filter = document.getElementById('statusFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const pricingFilter = document.getElementById('pricingFilter').value;
             const rows = document.querySelectorAll('tbody tr');
+            
             rows.forEach(row => {
-                if (!filter || row.dataset.status === filter) {
+                const statusMatch = !statusFilter || row.dataset.status === statusFilter;
+                const pricingMatch = !pricingFilter || row.dataset.pricing === pricingFilter;
+                
+                if (statusMatch && pricingMatch) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
                 }
             });
         }
+        
+        function filterPricing() {
+            filterCourses();
+        }
+        
+        // Set filter from URL params
+        {% if status_filter %}
+        document.getElementById('statusFilter').value = '{{ status_filter }}';
+        {% endif %}
+        {% if pricing_filter %}
+        document.getElementById('pricingFilter').value = '{{ pricing_filter }}';
+        {% endif %}
     </script>
 </body>
 </html>

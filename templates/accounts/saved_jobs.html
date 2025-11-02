@@ -73,9 +73,14 @@
                                     <h3>{{ saved_job.job.job_title }}</h3>
                                     <p class="company-name">{{ saved_job.job.company_name }}</p>
                                 </div>
-                                <button class="bookmark-btn active" onclick="unsaveJob({{ saved_job.job.id }})">
-                                    <i class="fas fa-bookmark"></i>
-                                </button>
+                                <form method="POST" action="{% url 'accounts:saved_jobs' %}" style="display: inline;" onsubmit="return confirm('Remove this job from saved?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="saved_job_id" value="{{ saved_job.id }}">
+                                    <button type="submit" class="bookmark-btn active" style="border: none; background: none; cursor: pointer;">
+                                        <i class="fas fa-trash" style="color: #ef4444;"></i>
+                                    </button>
+                                </form>
                             </div>
                             <div class="job-details">
                                 <span><i class="fas fa-map-marker-alt"></i> {{ saved_job.job.location }}</span>
@@ -105,18 +110,6 @@
         </div>
     </main>
 
-    <script>
-        function unsaveJob(jobId) {
-            if (confirm('Remove this job from your saved list?')) {
-                fetch(`/jobs/save/${jobId}/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}',
-                    },
-                }).then(() => location.reload());
-            }
-        }
-    </script>
 </body>
 </html>
 

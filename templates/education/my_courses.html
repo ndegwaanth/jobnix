@@ -98,7 +98,15 @@
                             <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
                                 <div style="flex: 1;">
                                     <h3 style="margin: 0 0 0.5rem 0;">{{ enrollment.course.title }}</h3>
-                                    <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary);">{{ enrollment.course.institution.get_full_name|default:enrollment.course.institution.username|default:"JobNix" }}</p>
+                                    <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary);">
+                                        {% if enrollment.course.instructor %}
+                                            {{ enrollment.course.instructor.get_full_name|default:enrollment.course.instructor.username }}
+                                        {% elif enrollment.course.institution %}
+                                            {{ enrollment.course.institution.get_full_name|default:enrollment.course.institution.username }}
+                                        {% else %}
+                                            JobNix
+                                        {% endif %}
+                                    </p>
                                     <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1rem;">
                                         <span class="status-badge status-{{ enrollment.status }}">{{ enrollment.get_status_display }}</span>
                                         <div class="progress-bar" style="flex: 1; max-width: 300px;">
@@ -116,6 +124,14 @@
                                     <a href="{% url 'education:course_detail' enrollment.course.id %}" class="btn-primary">
                                         <i class="fas fa-book-open"></i> Continue
                                     </a>
+                                    <form method="POST" action="{% url 'education:my_courses' %}" style="display: inline;" onsubmit="return confirm('Unenroll from this course?');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="unenroll">
+                                        <input type="hidden" name="enrollment_id" value="{{ enrollment.id }}">
+                                        <button type="submit" class="btn-danger" style="padding: 0.5rem 1rem;">
+                                            <i class="fas fa-times"></i> Unenroll
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

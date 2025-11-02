@@ -98,7 +98,7 @@ def job_detail_view(request, job_id):
     # Check if user has applied
     has_applied = False
     if request.user.is_authenticated:
-        has_applied = Application.objects.filter(user=request.user, job=job).exists()
+        has_applied = Application.objects.filter(applicant=request.user, job=job).exists()
     
     # Check if saved
     is_saved = False
@@ -119,14 +119,14 @@ def job_apply_view(request, job_id):
     job = get_object_or_404(Job, id=job_id, is_active=True)
     
     # Check if already applied
-    if Application.objects.filter(user=request.user, job=job).exists():
+    if Application.objects.filter(applicant=request.user, job=job).exists():
         messages.info(request, 'You have already applied for this job')
         return redirect('jobs:job_detail', job_id=job_id)
     
     if request.method == 'POST':
         # Create application
         Application.objects.create(
-            user=request.user,
+            applicant=request.user,
             job=job,
             status='pending'
         )
@@ -141,6 +141,10 @@ def job_apply_view(request, job_id):
             message=f'Your application for {job.job_title} has been submitted',
             link=f'/accounts/applications/'
         )
+        
+        # Update job application count
+        job.applications_count += 1
+        job.save(update_fields=['applications_count'])
         
         return redirect('jobs:job_detail', job_id=job_id)
     

@@ -148,6 +148,17 @@ def save_course_view(request, course_id):
 @login_required
 def my_courses_view(request):
     """View user's enrolled courses"""
+    if request.method == 'POST' and request.POST.get('action') == 'unenroll':
+        enrollment_id = request.POST.get('enrollment_id')
+        try:
+            enrollment = Enrollment.objects.get(id=enrollment_id, user=request.user)
+            course_title = enrollment.course.title
+            enrollment.delete()
+            messages.success(request, f'Unenrolled from {course_title}')
+            return redirect('education:my_courses')
+        except Enrollment.DoesNotExist:
+            messages.error(request, 'Enrollment not found')
+    
     enrollments = Enrollment.objects.filter(user=request.user).select_related('course').order_by('-enrolled_at')
     
     # Calculate stats

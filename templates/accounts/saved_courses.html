@@ -71,9 +71,14 @@
                                     <h3>{{ saved_course.course.title }}</h3>
                                     <p>{{ saved_course.course.level|title }} Level</p>
                                 </div>
-                                <button class="bookmark-btn active" onclick="unsaveCourse({{ saved_course.course.id }})">
-                                    <i class="fas fa-bookmark"></i>
-                                </button>
+                                <form method="POST" action="{% url 'accounts:saved_courses' %}" style="display: inline;" onsubmit="return confirm('Remove this course from saved?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="saved_course_id" value="{{ saved_course.id }}">
+                                    <button type="submit" class="bookmark-btn active" style="border: none; background: none; cursor: pointer;">
+                                        <i class="fas fa-trash" style="color: #ef4444;"></i>
+                                    </button>
+                                </form>
                             </div>
                             <div class="course-details">
                                 <p><i class="fas fa-clock"></i> {{ saved_course.course.duration_hours }} hours</p>
@@ -101,14 +106,6 @@
         </div>
     </main>
 
-    <script>
-        function unsaveCourse(courseId) {
-            if (confirm('Remove this course from your saved list?')) {
-                // Implement unsave functionality
-                location.reload();
-            }
-        }
-    </script>
 </body>
 </html>
 

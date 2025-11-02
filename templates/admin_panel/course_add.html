@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Course - JobNix Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+</head>
+<body class="dashboard-admin">
+    <!-- Sidebar -->
+    <aside class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>Job<span class="accent">Nix</span> Admin</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin_panel:course_management' %}" class="nav-item active">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Courses</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar admin-topbar">
+            <div class="topbar-left">
+                <h1>Add New Course</h1>
+                <p>Create a new training course</p>
+            </div>
+            <div class="topbar-right">
+                <a href="{% url 'admin_panel:course_management' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Courses
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card admin-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-plus-circle"></i> Course Information</h2>
+                </div>
+                <form method="POST" class="form-container">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="title">Course Title *</label>
+                        <input type="text" id="title" name="title" required placeholder="Enter course title">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description *</label>
+                        <textarea id="description" name="description" rows="6" required placeholder="Enter course description"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <input type="text" id="category" name="category" placeholder="e.g., Technology, Business">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="level">Level *</label>
+                            <select id="level" name="level" required>
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                                <option value="expert">Expert</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="duration_hours">Duration (Hours)</label>
+                            <input type="number" id="duration_hours" name="duration_hours" min="0" value="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="instructor">Instructor</label>
+                            <select id="instructor" name="instructor">
+                                <option value="">Select Instructor</option>
+                                {% for instructor in instructors %}
+                                <option value="{{ instructor.id }}">{{ instructor.get_full_name|default:instructor.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skills_taught">Skills Taught (comma-separated)</label>
+                        <input type="text" id="skills_taught" name="skills_taught" placeholder="e.g., Python, Django, JavaScript">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="price">Price (USD) *</label>
+                            <input type="number" id="price" name="price" step="0.01" min="0" value="0.00" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="is_free" name="is_free" onchange="togglePriceField()">
+                                <span>Free Course</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="status">Status *</label>
+                            <select id="status" name="status" required>
+                                <option value="draft">Draft</option>
+                                <option value="pending">Pending Approval</option>
+                                <option value="active">Active</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="is_active" name="is_active" checked>
+                                <span>Active</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Create Course
+                        </button>
+                        <a href="{% url 'admin_panel:course_management' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+                
+                <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(99, 102, 241, 0.05); border-radius: var(--radius); border-left: 4px solid var(--primary);">
+                    <h4 style="margin-bottom: 0.5rem;"><i class="fas fa-info-circle"></i> Adding Course Content</h4>
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
+                        After creating the course, you can add modules, videos, video links, documents, and resources 
+                        by editing the course and using the Django Admin link, or by going to 
+                        <strong>/admin/education/coursemodule/</strong> and <strong>/admin/education/coursecontent/</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function togglePriceField() {
+            const isFree = document.getElementById('is_free').checked;
+            const priceField = document.getElementById('price');
+            if (isFree) {
+                priceField.value = '0.00';
+                priceField.disabled = true;
+            } else {
+                priceField.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
+
