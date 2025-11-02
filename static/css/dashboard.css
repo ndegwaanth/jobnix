@@ -1546,3 +1546,307 @@ body {
     font-size: 0.9rem;
 }
 
+/* ========================================
+   Theme Switcher Button
+   ======================================== */
+
+.theme-switcher {
+    display: flex;
+    align-items: center;
+}
+
+.btn-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 1rem;
+}
+
+.btn-icon:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: scale(1.1);
+}
+
+.btn-icon:active {
+    transform: scale(0.95);
+}
+
+/* ========================================
+   Dark Theme Styles
+   ======================================== */
+
+body.dark-theme {
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --text-light: #9ca3af;
+    --bg-primary: #1f2937;
+    --bg-secondary: #111827;
+    --bg-dark: #0f172a;
+    --border-color: #374151;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+}
+
+body.dark-theme .sidebar {
+    background: var(--bg-primary);
+    border-right-color: var(--border-color);
+}
+
+body.dark-theme .sidebar-nav .nav-item {
+    color: var(--text-secondary);
+}
+
+body.dark-theme .sidebar-nav .nav-item:hover {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary-light);
+}
+
+body.dark-theme .sidebar-nav .nav-item.active {
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--primary-light);
+    border-left-color: var(--primary);
+}
+
+body.dark-theme .topbar {
+    background: var(--bg-primary);
+    border-bottom-color: var(--border-color);
+}
+
+body.dark-theme .topbar h1 {
+    color: var(--text-primary);
+}
+
+body.dark-theme .topbar p {
+    color: var(--text-secondary);
+}
+
+body.dark-theme .dashboard-card {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+body.dark-theme .dashboard-card h2,
+body.dark-theme .dashboard-card h3 {
+    color: var(--text-primary);
+}
+
+body.dark-theme .stat-card {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+body.dark-theme .stat-card h3 {
+    color: var(--text-primary);
+}
+
+body.dark-theme .stat-card p {
+    color: var(--text-secondary);
+}
+
+body.dark-theme .btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+body.dark-theme .btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+body.dark-theme .btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+body.dark-theme .btn-secondary:hover {
+    background: var(--bg-primary);
+    border-color: var(--primary);
+}
+
+body.dark-theme .form-group input,
+body.dark-theme .form-group textarea,
+body.dark-theme .form-group select {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+body.dark-theme .form-group input:focus,
+body.dark-theme .form-group textarea:focus,
+body.dark-theme .form-group select:focus {
+    border-color: var(--primary);
+    background: var(--bg-primary);
+}
+
+body.dark-theme .form-group label {
+    color: var(--text-primary);
+}
+
+body.dark-theme .status-badge {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary-light);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+body.dark-theme .course-module-advanced {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+body.dark-theme .content-item-advanced {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+body.dark-theme .content-item-advanced h5 {
+    color: var(--text-primary);
+}
+
+body.dark-theme .content-item-advanced p {
+    color: var(--text-secondary);
+}
+
+body.dark-theme .btn-icon {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+body.dark-theme .btn-icon:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+body.dark-theme .user-menu {
+    color: var(--text-primary);
+}
+
+body.dark-theme .user-menu .avatar {
+    border-color: var(--border-color);
+}
+
+body.dark-theme .notifications {
+    color: var(--text-primary);
+}
+
+body.dark-theme .notifications:hover {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary-light);
+}
+
+body.dark-theme .notifications .badge {
+    background: var(--primary);
+    color: white;
+}
+
+body.dark-theme .stat-icon {
+    box-shadow: var(--shadow-md);
+}
+
+body.dark-theme .dashboard-grid {
+    background: var(--bg-secondary);
+}
+
+body.dark-theme .activity-item {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+body.dark-theme .activity-item h4 {
+    color: var(--text-primary);
+}
+
+body.dark-theme .activity-item p {
+    color: var(--text-secondary);
+}
+
+body.dark-theme .skill-tag {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary-light);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+body.dark-theme .job-card,
+body.dark-theme .course-card {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+body.dark-theme .job-card h4,
+body.dark-theme .course-card h4 {
+    color: var(--text-primary);
+}
+
+body.dark-theme .job-card p,
+body.dark-theme .course-card p {
+    color: var(--text-secondary);
+}
+
+body.dark-theme .progress-bar {
+    background: var(--bg-secondary);
+}
+
+body.dark-theme .progress-fill {
+    background: var(--primary);
+}
+
+body.dark-theme .nav-item.logout {
+    color: var(--text-secondary);
+}
+
+body.dark-theme .nav-item.logout:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error);
+}
+
+/* PDF Viewer in Dark Theme */
+body.dark-theme .pdf-viewer-container {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+body.dark-theme .pdf-viewer-header h3 {
+    color: var(--text-primary);
+}
+
+body.dark-theme .content-nav-item {
+    color: var(--text-secondary);
+}
+
+body.dark-theme .content-nav-item:hover {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary-light);
+}
+
+body.dark-theme .content-nav-item.active {
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--primary-light);
+}
+
+body.dark-theme .module-nav-item {
+    color: var(--text-primary);
+}
+
+body.dark-theme .module-nav-item:hover {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+body.dark-theme .module-nav-item.active {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--primary);
+}
+

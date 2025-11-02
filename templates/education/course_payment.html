@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Course - {{ course.title }} - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dashboard-youth">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'education:course_list' %}" class="nav-item">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Browse Courses</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Purchase Course</h1>
+                <p>{{ course.title }}</p>
+            </div>
+            <div class="topbar-right">
+                <a href="{% url 'education:course_detail' course.id %}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Course
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-credit-card"></i> Payment Information</h2>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem;">
+                    <!-- Course Summary -->
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">Course Summary</h3>
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: var(--radius);">
+                            <h4 style="margin: 0 0 0.5rem 0;">{{ course.title }}</h4>
+                            <p style="margin: 0 0 1rem 0; color: var(--text-secondary);">{{ course.description|truncatewords:30 }}</p>
+                            <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                                <span><strong>Price:</strong></span>
+                                <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${{ course.price|floatformat:2 }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">Select Payment Method</h3>
+                        <form method="POST" class="form-container">
+                            {% csrf_token %}
+                            
+                            <div class="payment-methods" style="margin-bottom: 1.5rem;">
+                                <div class="payment-option" style="padding: 1rem; border: 2px solid var(--border-color); border-radius: var(--radius); margin-bottom: 1rem; cursor: pointer; transition: all 0.3s;" onclick="selectPaymentMethod('paypal')">
+                                    <input type="radio" id="paypal" name="payment_method" value="paypal" required style="margin-right: 0.5rem;">
+                                    <label for="paypal" style="cursor: pointer; display: flex; align-items: center; gap: 0.75rem; margin: 0;">
+                                        <i class="fab fa-paypal" style="font-size: 1.5rem; color: #0070ba;"></i>
+                                        <span><strong>PayPal</strong> - Secure online payment</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="payment-option" style="padding: 1rem; border: 2px solid var(--border-color); border-radius: var(--radius); margin-bottom: 1rem; cursor: pointer; transition: all 0.3s;" onclick="selectPaymentMethod('mpesa')">
+                                    <input type="radio" id="mpesa" name="payment_method" value="mpesa" required style="margin-right: 0.5rem;">
+                                    <label for="mpesa" style="cursor: pointer; display: flex; align-items: center; gap: 0.75rem; margin: 0;">
+                                        <i class="fas fa-mobile-alt" style="font-size: 1.5rem; color: #00a900;"></i>
+                                        <span><strong>M-Pesa</strong> - Mobile money payment</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="payment-option" style="padding: 1rem; border: 2px solid var(--border-color); border-radius: var(--radius); margin-bottom: 1rem; cursor: pointer; transition: all 0.3s;" onclick="selectPaymentMethod('card')">
+                                    <input type="radio" id="card" name="payment_method" value="card" required style="margin-right: 0.5rem;">
+                                    <label for="card" style="cursor: pointer; display: flex; align-items: center; gap: 0.75rem; margin: 0;">
+                                        <i class="fas fa-credit-card" style="font-size: 1.5rem; color: var(--primary);"></i>
+                                        <span><strong>Credit/Debit Card</strong> - Visa, Mastercard</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="payment-option" style="padding: 1rem; border: 2px solid var(--border-color); border-radius: var(--radius); margin-bottom: 1rem; cursor: pointer; transition: all 0.3s;" onclick="selectPaymentMethod('bank_transfer')">
+                                    <input type="radio" id="bank_transfer" name="payment_method" value="bank_transfer" required style="margin-right: 0.5rem;">
+                                    <label for="bank_transfer" style="cursor: pointer; display: flex; align-items: center; gap: 0.75rem; margin: 0;">
+                                        <i class="fas fa-university" style="font-size: 1.5rem; color: #6366f1;"></i>
+                                        <span><strong>Bank Transfer</strong> - Direct bank deposit</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div style="background: rgba(99, 102, 241, 0.05); padding: 1rem; border-radius: var(--radius); margin-bottom: 1.5rem; border-left: 4px solid var(--primary);">
+                                <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">
+                                    <i class="fas fa-info-circle"></i> 
+                                    <strong>Note:</strong> This is a demo payment. In production, you would be redirected to the payment gateway (PayPal, M-Pesa, etc.) to complete the transaction securely.
+                                </p>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+                                    <i class="fas fa-lock"></i> Complete Payment - ${{ course.price|floatformat:2 }}
+                                </button>
+                                <a href="{% url 'education:course_detail' course.id %}" class="btn-secondary" style="width: 100%; display: block; text-align: center; margin-top: 0.5rem; text-decoration: none;">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function selectPaymentMethod(method) {
+            document.getElementById(method).checked = true;
+            document.querySelectorAll('.payment-option').forEach(opt => {
+                opt.style.borderColor = 'var(--border-color)';
+                opt.style.background = 'transparent';
+            });
+            event.currentTarget.style.borderColor = 'var(--primary)';
+            event.currentTarget.style.background = 'rgba(99, 102, 241, 0.05)';
+        }
+        
+        // Initialize payment option styling
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.querySelectorAll('.payment-option').forEach(opt => {
+                    opt.style.borderColor = 'var(--border-color)';
+                    opt.style.background = 'transparent';
+                });
+                if (this.checked) {
+                    this.closest('.payment-option').style.borderColor = 'var(--primary)';
+                    this.closest('.payment-option').style.background = 'rgba(99, 102, 241, 0.05)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

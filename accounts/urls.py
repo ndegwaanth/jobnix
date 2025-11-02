@@ -40,4 +40,5 @@ urlpatterns = [
     path('candidates/saved/', views.saved_candidates_view, name='saved_candidates'),
     path('interview/<int:application_id>/', views.interview_manage_view, name='interview_manage'),
     path('reports/', views.employer_reports_view, name='employer_reports'),
+    path('update-theme/', views.update_theme_view, name='update_theme'),
 ]

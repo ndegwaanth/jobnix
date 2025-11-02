@@ -6,7 +6,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.db import models
 from django.urls import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from .models import User, EmailVerification, JobSeekerProfile, EmployerProfile, InstitutionProfile, Notification
 from .utils import send_verification_email, verify_email_code
 
@@ -544,7 +544,7 @@ def profile_edit_view(request):
         
         profile.save()
         messages.success(request, 'Profile updated successfully!')
-        return redirect('accounts:profile')
+        return redirect('accounts:dashboard')
     
     context = {'user': user, 'profile': profile}
     return render(request, 'accounts/profile_edit.html', context)
@@ -818,7 +818,7 @@ def company_profile_edit_view(request):
         
         profile.save()
         messages.success(request, 'Company profile updated successfully!')
-        return redirect('accounts:company_profile')
+        return redirect('accounts:dashboard')
     
     context = {'user': user, 'profile': profile}
     return render(request, 'accounts/company_profile_edit.html', context)
@@ -1171,3 +1171,19 @@ def employer_reports_view(request):
         return response
     
     return render(request, 'accounts/employer_reports.html', context)
+
+
+@login_required
+def update_theme_view(request):
+    """Update user's theme preference"""
+    if request.method == 'POST':
+        import json
+        data = json.loads(request.body)
+        theme = data.get('theme', 'light')
+        
+        if theme in ['light', 'dark', 'auto']:
+            request.user.theme_preference = theme
+            request.user.save()
+            return JsonResponse({'success': True, 'theme': theme})
+    
+    return JsonResponse({'success': False}, status=400)

@@ -78,8 +78,17 @@
                     <span class="badge">{{ unread_notifications|default:"0" }}</span>
                 </a>
                 <div class="user-menu">
-                    <img src="https://ui-avatars.com/api/?name={{ user.employer_profile.company_name|default:user.username }}&background=ec4899&color=fff" alt="Company" class="avatar">
-                    <span>{{ user.first_name|default:user.username }}</span>
+                    {% if profile and profile.company_logo %}
+                        <img src="{{ profile.company_logo.url }}" alt="Company Logo" class="avatar">
+                    {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ profile.company_name|default:user.username }}&background=ec4899&color=fff" alt="Company" class="avatar">
+                    {% endif %}
+                    <span>{{ profile.company_name|default:user.username }}</span>
+                </div>
+                <div class="theme-switcher" style="margin-left: 1rem;">
+                    <button onclick="toggleTheme()" class="btn-icon" title="Toggle Theme">
+                        <i class="fas fa-moon" id="theme-icon"></i>
+                    </button>
                 </div>
             </div>
         </header>
@@ -281,6 +290,7 @@
     </main>
 
     <script src="{% static 'js/dashboard.js' %}"></script>
+    <script src="{% static 'js/theme-switcher.js' %}"></script>
 </body>
 </html>
 

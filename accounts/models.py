@@ -17,6 +17,7 @@ class User(AbstractUser):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='youth')
     phone = models.CharField(max_length=20, blank=True)
     is_verified = models.BooleanField(default=False)
+    theme_preference = models.CharField(max_length=20, choices=[('light', 'Light'), ('dark', 'Dark'), ('auto', 'Auto')], default='light')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

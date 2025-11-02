@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ course.title }} - Continue Learning - JobNix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    {% load account_filters %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <style>
+        .learning-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            height: calc(100vh - 80px);
+        }
+        
+        .learning-sidebar {
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        
+        .learning-content {
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        
+        .module-nav-item {
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+        
+        .module-nav-item:hover {
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
+        }
+        
+        .module-nav-item.active {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--primary);
+        }
+        
+        .content-nav-item {
+            padding: 0.5rem 0.5rem 0.5rem 2rem;
+            margin-bottom: 0.25rem;
+            cursor: pointer;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+        
+        .content-nav-item:hover {
+            background: var(--bg-secondary);
+        }
+        
+        .content-nav-item.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .video-player-container {
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: var(--radius);
+            background: #000;
+            margin-bottom: 1rem;
+        }
+        
+        .video-wrapper video,
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .pdf-viewer-container {
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            height: calc(100vh - 200px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .pdf-viewer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .pdf-viewer-frame {
+            flex: 1;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        
+        .pdf-viewer-frame iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .content-placeholder {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+        
+        .content-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body class="dashboard-youth">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-briefcase"></i>
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'education:my_courses' %}" class="nav-item active">
+                <i class="fas fa-book"></i>
+                <span>My Courses</span>
+            </a>
+            <a href="{% url 'education:course_list' %}" class="nav-item">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Browse Courses</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>{{ course.title }}</h1>
+                <p>Continue Learning - Progress: {{ enrollment.progress_percentage|floatformat:0 }}%</p>
+            </div>
+            <div class="topbar-right">
+                <a href="{% url 'education:my_courses' %}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to My Courses
+                </a>
+            </div>
+        </header>
+
+        <div class="learning-container">
+            <!-- Course Navigation Sidebar -->
+            <div class="learning-sidebar">
+                <h3 style="margin-bottom: 1rem; color: var(--text-primary);">
+                    <i class="fas fa-list"></i> Course Content
+                </h3>
+                
+                {% for module in modules %}
+                <div class="module-section">
+                    <div class="module-nav-item" onclick="selectModule({{ module.id }})">
+                        <strong><i class="fas fa-folder"></i> {{ module.title }}</strong>
+                        <small style="display: block; color: var(--text-secondary); margin-top: 0.25rem;">
+                            {{ module.contents_list|length }} items
+                        </small>
+                    </div>
+                    
+                    <div id="module-{{ module.id }}-contents" style="display: none; margin-left: 1rem; margin-top: 0.5rem;">
+                        {% for content in module.contents_list %}
+                        <div class="content-nav-item" 
+                             data-content-id="{{ content.id }}" 
+                             data-content-type="{{ content.content_type }}" 
+                             data-content-title="{{ content.title|escapejs }}"
+                             {% if content.content_type == 'video' %}
+                                {% if content.video_url %}data-content-url="{{ content.video_url }}" data-is-external="true"
+                                {% elif content.video_file %}data-content-url="{{ content.video_file.url }}" data-is-external="false"
+                                {% else %}data-content-url="" data-is-external="false"{% endif %}
+                             {% elif content.content_type == 'document' %}
+                                {% if content.document_file %}data-content-url="{{ content.document_file.url }}"
+                                {% elif content.document_url %}data-content-url="{{ content.document_url }}"
+                                {% else %}data-content-url=""{% endif %}
+                             {% elif content.content_type == 'link' %}
+                                {% if content.external_link %}data-content-url="{{ content.external_link }}"
+                                {% else %}data-content-url=""{% endif %}
+                             {% else %}data-content-url=""{% endif %}>
+                            <i class="fas 
+                                {% if content.content_type == 'video' %}fa-play
+                                {% elif content.content_type == 'document' %}fa-file-pdf
+                                {% elif content.content_type == 'link' %}fa-link
+                                {% elif content.content_type == 'quiz' %}fa-question-circle
+                                {% elif content.content_type == 'assignment' %}fa-tasks
+                                {% else %}fa-file-alt{% endif %}
+                            "></i>
+                            <span>{{ content.title }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Learning Content Area -->
+            <div class="learning-content">
+                <div id="content-display">
+                    {% if first_video %}
+                        <div class="video-player-container">
+                            <h3 style="margin-bottom: 1rem; color: var(--text-primary);">
+                                <i class="fas fa-video"></i> {{ first_video.title }}
+                            </h3>
+                            <div class="video-wrapper">
+                                {% if first_video.video_url %}
+                                    {% if 'youtube.com' in first_video.video_url or 'youtu.be' in first_video.video_url %}
+                                        {% if 'youtube.com/watch' in first_video.video_url %}
+                                            <iframe id="currentVideo" src="https://www.youtube.com/embed/{{ first_video.video_url|split:'v='|last|split:'&'|first }}?autoplay=0" allowfullscreen allow="autoplay; encrypted-media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                        {% elif 'youtu.be' in first_video.video_url %}
+                                            <iframe id="currentVideo" src="https://www.youtube.com/embed/{{ first_video.video_url|split:'youtu.be/'|last|split:'?'|first }}?autoplay=0" allowfullscreen allow="autoplay; encrypted-media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                        {% else %}
+                                            <iframe id="currentVideo" src="https://www.youtube.com/embed/{{ first_video.video_url }}?autoplay=0" allowfullscreen allow="autoplay; encrypted-media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                        {% endif %}
+                                    {% elif 'vimeo.com' in first_video.video_url %}
+                                        <iframe id="currentVideo" src="https://player.vimeo.com/video/{{ first_video.video_url|split:'vimeo.com/'|last|split:'?'|first }}?autoplay=0" allowfullscreen allow="autoplay; encrypted-media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                    {% else %}
+                                        <iframe id="currentVideo" src="{{ first_video.video_url }}" allowfullscreen allow="autoplay; encrypted-media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                    {% endif %}
+                                {% elif first_video.video_file %}
+                                    <video id="currentVideo" controls controlsList="nodownload" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+                                        <source src="{{ first_video.video_file.url }}" type="video/mp4">
+                                        <source src="{{ first_video.video_file.url }}" type="video/webm">
+                                        <source src="{{ first_video.video_file.url }}" type="video/ogg">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                {% else %}
+                                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">
+                                        <div style="text-align: center;">
+                                            <i class="fas fa-video" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                                            <p>No video available for this content.</p>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            {% if first_video.description %}
+                            <p style="color: var(--text-secondary); margin-top: 1rem;">{{ first_video.description }}</p>
+                            {% endif %}
+                        </div>
+                    {% elif first_document %}
+                        <div class="pdf-viewer-container">
+                            <div class="pdf-viewer-header">
+                                <h3 style="margin: 0; color: var(--text-primary);">
+                                    <i class="fas fa-file-pdf"></i> {{ first_document.title }}
+                                </h3>
+                                <a href="{% if first_document.document_file %}{{ first_document.document_file.url }}{% else %}{{ first_document.document_url }}{% endif %}" download class="btn-primary">
+                                    <i class="fas fa-download"></i> Download PDF
+                                </a>
+                            </div>
+                            <div class="pdf-viewer-frame">
+                                <iframe id="currentDocument" src="{% if first_document.document_file %}{{ first_document.document_file.url }}{% else %}{{ first_document.document_url }}{% endif %}#toolbar=1&navpanes=1&scrollbar=1" type="application/pdf" style="width: 100%; height: 100%; border: none;"></iframe>
+                            </div>
+                            <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.9rem;">
+                                <i class="fas fa-info-circle"></i> You can scroll to read the document. Click "Download PDF" to save it to your device.
+                            </p>
+                            {% if first_document.description %}
+                            <p style="color: var(--text-secondary); margin-top: 0.5rem;">{{ first_document.description }}</p>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="content-placeholder">
+                            <i class="fas fa-book-open"></i>
+                            <h3>Select a content item from the sidebar</h3>
+                            <p>Choose a video or document to start learning</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentContentId = null;
+        let currentModuleId = null;
+        
+        function selectModule(moduleId) {
+            // Toggle module contents
+            const contentsDiv = document.getElementById(`module-${moduleId}-contents`);
+            const isVisible = contentsDiv.style.display !== 'none';
+            const moduleItem = event.currentTarget;
+            
+            // Hide all module contents
+            document.querySelectorAll('[id^="module-"][id$="-contents"]').forEach(div => {
+                div.style.display = 'none';
+            });
+            
+            // Remove active class from all modules
+            document.querySelectorAll('.module-nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected module contents if not already visible
+            if (!isVisible) {
+                contentsDiv.style.display = 'block';
+                moduleItem.classList.add('active');
+                currentModuleId = moduleId;
+            } else {
+                currentModuleId = null;
+            }
+        }
+        
+        // Add event listeners to content items
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.content-nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const contentId = this.getAttribute('data-content-id');
+                    const contentType = this.getAttribute('data-content-type');
+                    const contentTitle = this.getAttribute('data-content-title');
+                    const contentUrl = this.getAttribute('data-content-url');
+                    const isExternal = this.getAttribute('data-is-external') === 'true';
+                    
+                    if (contentUrl && contentUrl.trim() !== '') {
+                        loadContent(contentId, contentType, contentTitle, contentUrl, isExternal, this);
+                    } else {
+                        alert('This content does not have a valid URL or file. Please contact the course administrator.');
+                    }
+                });
+            });
+            
+            // Initialize: open first module and auto-load first content
+            {% if modules %}
+            setTimeout(function() {
+                const firstModule = document.querySelector('.module-nav-item');
+                if (firstModule) {
+                    firstModule.click();
+                    // Auto-select first content item with valid URL after module opens
+                    setTimeout(function() {
+                        const firstContent = document.querySelector('.content-nav-item[data-content-url]:not([data-content-url=""])');
+                        if (firstContent && !document.getElementById('content-display').querySelector('.video-player-container, .pdf-viewer-container')) {
+                            firstContent.click();
+                        }
+                    }, 300);
+                }
+            }, 100);
+            {% endif %}
+        });
+        
+        function loadContent(contentId, contentType, contentTitle, contentUrl, isExternalVideo, clickedElement) {
+            currentContentId = contentId;
+            
+            // Remove active class from all content items
+            document.querySelectorAll('.content-nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active class to selected item
+            if (clickedElement) {
+                clickedElement.classList.add('active');
+            }
+            
+            const displayArea = document.getElementById('content-display');
+            
+            if (contentType === 'video') {
+                let videoHtml = '';
+                if (isExternalVideo) {
+                    // Handle YouTube, Vimeo, etc.
+                    let embedUrl = contentUrl;
+                    if (contentUrl.includes('youtube.com/watch')) {
+                        const videoId = contentUrl.split('v=')[1]?.split('&')[0];
+                        if (videoId) {
+                            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                        }
+                    } else if (contentUrl.includes('youtu.be/')) {
+                        const videoId = contentUrl.split('youtu.be/')[1]?.split('?')[0];
+                        if (videoId) {
+                            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                        }
+                    } else if (contentUrl.includes('vimeo.com/')) {
+                        const videoId = contentUrl.split('vimeo.com/')[1]?.split('?')[0];
+                        if (videoId) {
+                            embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=1`;
+                        }
+                    }
+                    
+                    videoHtml = `
+                        <div class="video-player-container">
+                            <h3 style="margin-bottom: 1rem; color: var(--text-primary);">
+                                <i class="fas fa-video"></i> ${contentTitle}
+                            </h3>
+                            <div class="video-wrapper">
+                                <iframe src="${embedUrl}" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Uploaded video file
+                    videoHtml = `
+                        <div class="video-player-container">
+                            <h3 style="margin-bottom: 1rem; color: var(--text-primary);">
+                                <i class="fas fa-video"></i> ${contentTitle}
+                            </h3>
+                            <div class="video-wrapper">
+                                <video controls controlsList="nodownload" style="width: 100%; height: 100%;">
+                                    <source src="${contentUrl}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        </div>
+                    `;
+                }
+                displayArea.innerHTML = videoHtml;
+                
+            } else if (contentType === 'document') {
+                // PDF viewer
+                const pdfHtml = `
+                    <div class="pdf-viewer-container">
+                        <div class="pdf-viewer-header">
+                            <h3 style="margin: 0; color: var(--text-primary);">
+                                <i class="fas fa-file-pdf"></i> ${contentTitle}
+                            </h3>
+                            <a href="${contentUrl}" download class="btn-primary">
+                                <i class="fas fa-download"></i> Download PDF
+                            </a>
+                        </div>
+                        <div class="pdf-viewer-frame">
+                            <iframe src="${contentUrl}#toolbar=1&navpanes=1&scrollbar=1" type="application/pdf" style="width: 100%; height: 100%; border: none;"></iframe>
+                        </div>
+                        <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.9rem;">
+                            <i class="fas fa-info-circle"></i> You can scroll to read the document. Click "Download PDF" to save it to your device.
+                        </p>
+                    </div>
+                `;
+                displayArea.innerHTML = pdfHtml;
+                
+            } else if (contentType === 'link' && contentUrl) {
+                // External links
+                const linkHtml = `
+                    <div class="dashboard-card large">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">
+                            <i class="fas fa-link"></i> ${contentTitle}
+                        </h3>
+                        <div style="padding: 2rem; text-align: center;">
+                            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Click the button below to visit this external resource.</p>
+                            <a href="${contentUrl}" target="_blank" class="btn-primary" style="display: inline-block;">
+                                <i class="fas fa-external-link-alt"></i> Visit Link
+                            </a>
+                        </div>
+                    </div>
+                `;
+                displayArea.innerHTML = linkHtml;
+            } else {
+                // Other content types (text, quiz, assignment)
+                const otherHtml = `
+                    <div class="dashboard-card large">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">
+                            <i class="fas fa-file-alt"></i> ${contentTitle}
+                        </h3>
+                        <p style="color: var(--text-secondary); padding: 2rem;">
+                            This content type will be displayed here. Content preview is not yet available for this type.
+                        </p>
+                    </div>
+                `;
+                displayArea.innerHTML = otherHtml;
+            }
+        }
+        
+    </script>
+</body>
+</html>
+

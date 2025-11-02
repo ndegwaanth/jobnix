@@ -121,8 +121,8 @@
                                     {% endif %}
                                 </div>
                                 <div style="display: flex; gap: 0.5rem;">
-                                    <a href="{% url 'education:course_detail' enrollment.course.id %}" class="btn-primary">
-                                        <i class="fas fa-book-open"></i> Continue
+                                    <a href="{% url 'education:course_learn' enrollment.course.id %}" class="btn-primary">
+                                        <i class="fas fa-book-open"></i> Continue Learning
                                     </a>
                                     <form method="POST" action="{% url 'education:my_courses' %}" style="display: inline;" onsubmit="return confirm('Unenroll from this course?');">
                                         {% csrf_token %}

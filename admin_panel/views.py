@@ -413,49 +413,95 @@ def course_add_view(request):
             course.save()
             
             # Handle course content creation (modules and contents)
-            # Create a default module if module_title is provided
-            module_title = request.POST.get('module_title')
-            if module_title:
+            # Process all modules/sections
+            i = 0
+            while True:
+                module_title = request.POST.get(f'module_title_{i}')
+                if not module_title:
+                    break
+                
+                # Check if section has video (required)
+                section_video_url = request.POST.get(f'section_video_url_{i}', '').strip()
+                section_video_file = request.FILES.get(f'section_video_file_{i}')
+                section_video_title = request.POST.get(f'section_video_title_{i}', '').strip()
+                
+                if not section_video_url and not section_video_file:
+                    i += 1
+                    continue  # Skip sections without videos
+                
+                # Create module (section)
                 module = CourseModule.objects.create(
                     course=course,
                     title=module_title,
-                    description=request.POST.get('module_description', ''),
-                    order=0
+                    description=request.POST.get(f'module_description_{i}', ''),
+                    order=int(request.POST.get(f'module_order_{i}', i) or i)
                 )
                 
-                # Add content items
-                content_count = int(request.POST.get('content_count', 0) or 0)
-                for i in range(content_count):
-                    content_type = request.POST.get(f'content_type_{i}')
-                    content_title = request.POST.get(f'content_title_{i}')
-                    if content_type and content_title:
-                        content = CourseContent.objects.create(
-                            course=course,
-                            module=module,
-                            content_type=content_type,
-                            title=content_title,
-                            description=request.POST.get(f'content_description_{i}', ''),
-                            order=i
-                        )
+                # Create video content for this section (primary video)
+                if section_video_title or section_video_url or section_video_file:
+                    video_content = CourseContent.objects.create(
+                        course=course,
+                        module=module,
+                        content_type='video',
+                        title=section_video_title or f"{module_title} - Video",
+                        description=request.POST.get(f'section_video_description_{i}', ''),
+                        order=0  # Video is always first in section
+                    )
+                    
+                    if section_video_url:
+                        video_content.video_url = section_video_url
+                    if section_video_file:
+                        video_content.video_file = section_video_file
+                    
+                    video_content.video_duration = request.POST.get(f'section_video_duration_{i}', '')
+                    video_content.is_free_preview = False  # Main video is not free preview
+                    video_content.save()
+                
+                # Process subsection content items for this module (documents, links, text, etc.)
+                j = 0
+                subsection_order = 1  # Start after video (order 0)
+                while True:
+                    content_module_index = request.POST.get(f'content_module_index_{j}')
+                    if content_module_index is None:
+                        break
+                    
+                    # Check if this content belongs to current module
+                    if int(content_module_index) == i:
+                        content_type = request.POST.get(f'content_type_{j}')
+                        content_title = request.POST.get(f'content_title_{j}')
                         
-                        # Handle different content types
-                        if content_type == 'video':
-                            content.video_url = request.POST.get(f'video_url_{i}', '')
-                            if f'video_file_{i}' in request.FILES:
-                                content.video_file = request.FILES[f'video_file_{i}']
-                            content.video_duration = request.POST.get(f'video_duration_{i}', '')
-                        elif content_type == 'document':
-                            content.document_url = request.POST.get(f'document_url_{i}', '')
-                            if f'document_file_{i}' in request.FILES:
-                                content.document_file = request.FILES[f'document_file_{i}']
-                        elif content_type == 'link':
-                            content.external_link = request.POST.get(f'external_link_{i}', '')
-                            content.link_title = request.POST.get(f'link_title_{i}', '')
-                        elif content_type == 'text':
-                            content.text_content = request.POST.get(f'text_content_{i}', '')
-                        
-                        content.is_free_preview = request.POST.get(f'is_free_preview_{i}') == 'on'
-                        content.save()
+                        if content_type and content_title:
+                            content = CourseContent.objects.create(
+                                course=course,
+                                module=module,
+                                content_type=content_type,
+                                title=content_title,
+                                description=request.POST.get(f'content_description_{j}', ''),
+                                order=subsection_order  # Subsections come after video
+                            )
+                            
+                            # Handle different content types
+                            if content_type == 'document':
+                                content.document_url = request.POST.get(f'document_url_{j}', '')
+                                if f'document_file_{j}' in request.FILES:
+                                    content.document_file = request.FILES[f'document_file_{j}']
+                            elif content_type == 'link':
+                                content.external_link = request.POST.get(f'external_link_{j}', '')
+                                content.link_title = request.POST.get(f'link_title_{j}', '')
+                            elif content_type == 'text':
+                                content.text_content = request.POST.get(f'text_content_{j}', '')
+                            elif content_type == 'quiz':
+                                content.text_content = request.POST.get(f'text_content_{j}', '')  # Quiz stored in text_content for now
+                            elif content_type == 'assignment':
+                                content.text_content = request.POST.get(f'text_content_{j}', '')  # Assignment stored in text_content for now
+                            
+                            content.is_free_preview = request.POST.get(f'is_free_preview_{j}') == 'on'
+                            content.save()
+                            subsection_order += 1
+                    
+                    j += 1
+                
+                i += 1
             
             messages.success(request, f'Course "{course.title}" created successfully')
             return redirect('admin_panel:course_edit', course_id=course.id)

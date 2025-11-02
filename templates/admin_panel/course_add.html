@@ -56,7 +56,7 @@
                 <div class="card-header">
                     <h2><i class="fas fa-plus-circle"></i> Course Information</h2>
                 </div>
-                <form method="POST" class="form-container">
+                <form method="POST" class="form-container" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="form-group">
                         <label for="title">Course Title *</label>
@@ -149,19 +149,43 @@
                     </div>
                 </form>
                 
-                <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(99, 102, 241, 0.05); border-radius: var(--radius); border-left: 4px solid var(--primary);">
-                    <h4 style="margin-bottom: 0.5rem;"><i class="fas fa-info-circle"></i> Adding Course Content</h4>
-                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
-                        After creating the course, you can add modules, videos, video links, documents, and resources 
-                        by editing the course and using the Django Admin link, or by going to 
-                        <strong>/admin/education/coursemodule/</strong> and <strong>/admin/education/coursecontent/</strong>
+                <!-- Course Content Management -->
+                <div style="margin-top: 2rem; border-top: 2px solid var(--border-color); padding-top: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3><i class="fas fa-list"></i> Course Modules & Content</h3>
+                        <button type="button" onclick="addModule()" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                            <i class="fas fa-plus"></i> Add Module
+                        </button>
+                    </div>
+                    <div style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: var(--radius); border-left: 4px solid #ef4444; margin-bottom: 1.5rem;">
+                        <p style="margin: 0; color: #dc2626; font-size: 0.9rem; font-weight: 500;">
+                            <i class="fas fa-exclamation-triangle"></i> 
+                            <strong>Required:</strong> Each course must have at least <strong>one video</strong> and <strong>one document</strong>. 
+                            Each video will create a new section, and documents will appear as subsections within those sections.
+                        </p>
+                    </div>
+                    
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                        Add course sections by adding videos. Each video creates a new section. You can then add documents and other content as subsections within each section.
                     </p>
+                    
+                    <div id="modules-container">
+                        <!-- Modules will be added here dynamically -->
+                    </div>
+                    
+                    <div id="validation-message" style="display: none; background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: var(--radius); margin-top: 1rem; color: #dc2626;">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        <span id="validation-text"></span>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
+        let moduleCount = 0;
+        let contentCount = 0;
+        
         function togglePriceField() {
             const isFree = document.getElementById('is_free').checked;
             const priceField = document.getElementById('price');
@@ -172,6 +196,297 @@
                 priceField.disabled = false;
             }
         }
+        
+        function addModule() {
+            const moduleId = `module_${moduleCount}`;
+            const moduleIndex = moduleCount++;
+            const moduleHtml = `
+                <div id="${moduleId}" class="module-block" style="background: var(--bg-secondary); padding: 1.5rem; border-radius: var(--radius); margin-bottom: 1.5rem; border: 2px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="margin: 0;"><i class="fas fa-play-circle"></i> Section ${moduleIndex + 1} (Video Section)</h4>
+                        <button type="button" onclick="removeModule('${moduleId}')" class="btn btn-danger" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">
+                            <i class="fas fa-trash"></i> Remove Section
+                        </button>
+                    </div>
+                    
+                    <div style="background: rgba(59, 130, 246, 0.1); padding: 0.75rem; border-radius: var(--radius); margin-bottom: 1rem; border-left: 3px solid #3b82f6;">
+                        <p style="margin: 0; font-size: 0.85rem; color: #1e40af;">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>Video Required:</strong> Each section must have at least one video. Add the video below.
+                        </p>
+                    </div>
+                    
+                    <!-- Video Content for this Section -->
+                    <div class="form-group" style="background: white; padding: 1rem; border-radius: var(--radius); margin-bottom: 1rem; border: 1px solid var(--border-color);">
+                        <label style="font-weight: 600; color: var(--primary);"><i class="fas fa-video"></i> Section Video *</label>
+                        <div class="form-row" style="margin-top: 0.75rem;">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Video URL (YouTube, Vimeo, etc.)</label>
+                                <input type="url" name="section_video_url_${moduleIndex}" placeholder="https://youtube.com/watch?v=..." class="video-url-input">
+                                <small style="color: var(--text-secondary);">Provide either video URL OR upload video file below</small>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Video Duration (e.g., 10:30)</label>
+                                <input type="text" name="section_video_duration_${moduleIndex}" placeholder="10:30">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 0.75rem;">
+                            <label>Or Upload Video File</label>
+                            <input type="file" name="section_video_file_${moduleIndex}" accept="video/*" class="video-file-input">
+                            <small style="color: var(--text-secondary);">Upload MP4, MOV, or other video format</small>
+                        </div>
+                        <div class="form-group" style="margin-top: 0.75rem;">
+                            <label>Video Title *</label>
+                            <input type="text" name="section_video_title_${moduleIndex}" required placeholder="e.g., Introduction to Course Topic">
+                        </div>
+                        <div class="form-group">
+                            <label>Video Description</label>
+                            <textarea name="section_video_description_${moduleIndex}" rows="2" placeholder="Brief description of what this video covers"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Section Title *</label>
+                        <input type="text" name="module_title_${moduleIndex}" required placeholder="e.g., Introduction to Python" value="Section ${moduleIndex + 1}">
+                        <small style="color: var(--text-secondary);">Section name based on the video topic</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Section Description</label>
+                        <textarea name="module_description_${moduleIndex}" rows="2" placeholder="Section description - what students will learn"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Section Order</label>
+                        <input type="number" name="module_order_${moduleIndex}" value="${moduleIndex}" min="0">
+                    </div>
+                    
+                    <div style="margin-top: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <h5 style="margin: 0;"><i class="fas fa-file"></i> Subsections (Documents, Links, Text, etc.)</h5>
+                            <button type="button" onclick="addContent('${moduleId}', ${moduleIndex})" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;">
+                                <i class="fas fa-plus"></i> Add Subsection
+                            </button>
+                        </div>
+                        <p style="margin: 0 0 0.75rem 0; font-size: 0.85rem; color: var(--text-secondary);">
+                            Add documents, reading materials, links, quizzes, or assignments as subsections within this section.
+                        </p>
+                        <div id="content_${moduleId}" class="content-container">
+                            <!-- Content items will be added here -->
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modules-container').insertAdjacentHTML('beforeend', moduleHtml);
+        }
+        
+        function addContent(moduleId, moduleIndex) {
+            const contentId = `content_${contentCount++}`;
+            const contentHtml = `
+                <div id="${contentId}" class="content-item" style="background: white; padding: 1rem; border-radius: var(--radius); margin-bottom: 0.75rem; border: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <h6 style="margin: 0;"><i class="fas fa-file-alt"></i> Content Item (Subsection)</h6>
+                        <button type="button" onclick="removeContent('${contentId}')" class="btn btn-danger" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Content Type *</label>
+                            <select name="content_type_${contentCount - 1}" onchange="toggleContentFields('${contentId}', this.value)" required>
+                                <option value="">Select type...</option>
+                                <option value="document">Document (PDF, DOC, etc.)</option>
+                                <option value="link">External Link</option>
+                                <option value="text">Text Content</option>
+                                <option value="quiz">Quiz</option>
+                                <option value="assignment">Assignment</option>
+                            </select>
+                            <small style="display: block; color: var(--text-secondary); margin-top: 0.25rem;">
+                                Note: Videos should be added as sections (modules), not subsections
+                            </small>
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Title *</label>
+                            <input type="text" name="content_title_${contentCount - 1}" required placeholder="Content title">
+                        </div>
+                        <div class="form-group">
+                            <label>Order</label>
+                            <input type="number" name="content_order_${contentCount - 1}" value="0" min="0" style="width: 80px;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea name="content_description_${contentCount - 1}" rows="2" placeholder="Content description"></textarea>
+                    </div>
+                    
+                    <!-- Video Fields -->
+                    <div class="content-fields video-fields" id="video_fields_${contentId}">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Video URL (YouTube, Vimeo, etc.)</label>
+                                <input type="url" name="video_url_${contentCount - 1}" placeholder="https://youtube.com/watch?v=...">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Video Duration (e.g., 10:30)</label>
+                                <input type="text" name="video_duration_${contentCount - 1}" placeholder="10:30">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Or Upload Video File</label>
+                            <input type="file" name="video_file_${contentCount - 1}" accept="video/*">
+                        </div>
+                    </div>
+                    
+                    <!-- Document Fields -->
+                    <div class="content-fields document-fields" id="document_fields_${contentId}" style="display: none;">
+                        <div class="form-group">
+                            <label>Document URL</label>
+                            <input type="url" name="document_url_${contentCount - 1}" placeholder="https://example.com/document.pdf">
+                        </div>
+                        <div class="form-group">
+                            <label>Or Upload Document File</label>
+                            <input type="file" name="document_file_${contentCount - 1}" accept=".pdf,.doc,.docx">
+                        </div>
+                    </div>
+                    
+                    <!-- Link Fields -->
+                    <div class="content-fields link-fields" id="link_fields_${contentId}" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label>External Link URL *</label>
+                                <input type="url" name="external_link_${contentCount - 1}" placeholder="https://example.com/resource">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Link Title</label>
+                                <input type="text" name="link_title_${contentCount - 1}" placeholder="Link display title">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Text Fields -->
+                    <div class="content-fields text-fields" id="text_fields_${contentId}" style="display: none;">
+                        <div class="form-group">
+                            <label>Text Content</label>
+                            <textarea name="text_content_${contentCount - 1}" rows="4" placeholder="Enter text content"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 0.5rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" name="is_free_preview_${contentCount - 1}">
+                            <span>Free Preview (accessible without enrollment)</span>
+                        </label>
+                    </div>
+                    
+                    <input type="hidden" name="content_module_index_${contentCount - 1}" value="${moduleIndex}">
+                </div>
+            `;
+            
+            document.getElementById(`content_${moduleId}`).insertAdjacentHTML('beforeend', contentHtml);
+        }
+        
+        function toggleContentFields(contentId, contentType) {
+            // Hide all fields
+            document.querySelectorAll(`#${contentId} .content-fields`).forEach(f => f.style.display = 'none');
+            
+            // Show relevant fields
+            if (contentType === 'video') {
+                document.getElementById(`video_fields_${contentId}`).style.display = 'block';
+            } else if (contentType === 'document') {
+                document.getElementById(`document_fields_${contentId}`).style.display = 'block';
+            } else if (contentType === 'link') {
+                document.getElementById(`link_fields_${contentId}`).style.display = 'block';
+            } else if (contentType === 'text') {
+                document.getElementById(`text_fields_${contentId}`).style.display = 'block';
+            }
+        }
+        
+        function removeModule(moduleId) {
+            document.getElementById(moduleId).closest('.module-block').remove();
+        }
+        
+        function removeContent(contentId) {
+            document.getElementById(contentId).remove();
+        }
+        
+        // Initialize price field toggle
+        document.getElementById('is_free').addEventListener('change', togglePriceField);
+        togglePriceField();
+        
+        // Form validation before submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const modulesContainer = document.getElementById('modules-container');
+            const modules = modulesContainer.querySelectorAll('.module-block');
+            
+            if (modules.length === 0) {
+                e.preventDefault();
+                showValidationError('Please add at least one section with a video.');
+                return false;
+            }
+            
+            // Check each module has a video
+            let hasVideo = false;
+            let hasDocument = false;
+            
+            modules.forEach(module => {
+                const moduleId = module.id;
+                const videoUrl = module.querySelector(`input[name^="section_video_url_"]`);
+                const videoFile = module.querySelector(`input[name^="section_video_file_"]`);
+                
+                if (videoUrl && videoUrl.value.trim() || videoFile && videoFile.files.length > 0) {
+                    hasVideo = true;
+                }
+                
+                // Check for documents in subsections
+                const contents = module.querySelectorAll('.content-item');
+                contents.forEach(content => {
+                    const contentType = content.querySelector('select[name^="content_type_"]');
+                    if (contentType && contentType.value === 'document') {
+                        const docUrl = content.querySelector(`input[name^="document_url_"]`);
+                        const docFile = content.querySelector(`input[name^="document_file_"]`);
+                        if (docUrl && docUrl.value.trim() || docFile && docFile.files.length > 0) {
+                            hasDocument = true;
+                        }
+                    }
+                });
+            });
+            
+            if (!hasVideo) {
+                e.preventDefault();
+                showValidationError('Please add at least one video in any section.');
+                return false;
+            }
+            
+            if (!hasDocument) {
+                e.preventDefault();
+                showValidationError('Please add at least one document as a subsection in any section.');
+                return false;
+            }
+            
+            hideValidationError();
+        });
+        
+        function showValidationError(message) {
+            const validationDiv = document.getElementById('validation-message');
+            const validationText = document.getElementById('validation-text');
+            validationText.textContent = message;
+            validationDiv.style.display = 'block';
+            validationDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function hideValidationError() {
+            document.getElementById('validation-message').style.display = 'none';
+        }
+        
+        // Auto-add first module on page load
+        window.addEventListener('load', function() {
+            if (document.getElementById('modules-container').children.length === 0) {
+                addModule();
+            }
+        });
     </script>
 </body>
 </html>
