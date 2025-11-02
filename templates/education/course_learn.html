@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ course.title }} - Continue Learning - JobNix</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     {% load static %}
     {% load account_filters %}
+    <link rel="icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <script src="{% static 'js/theme-switcher.js' %}"></script>
     <style>
         .learning-container {
             display: grid;
@@ -141,7 +144,7 @@
         }
     </style>
 </head>
-<body class="dashboard-youth">
+<body class="dashboard-youth" data-user-theme="{{ user.theme_preference|default:'light' }}">
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -248,11 +251,17 @@
                                 {% if first_video.video_url %}
                                     {% if 'youtube.com' in first_video.video_url or 'youtu.be' in first_video.video_url %}
                                         {% if 'youtube.com/watch' in first_video.video_url %}
-                                            <iframe id="currentVideo" src="https://www.youtube.com/embed/{{ first_video.video_url|split:'v='|last|split:'&'|first }}?autoplay=0" allowfullscreen allow="autoplay; encrypted-media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                            {% with video_id=first_video.video_url|split:'v='|last|split:'&'|first %}
+                                            <iframe id="currentVideo" src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1&origin={{ request.scheme }}://{{ request.get_host }}" allowfullscreen allow="autoplay; encrypted-media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                            {% endwith %}
                                         {% elif 'youtu.be' in first_video.video_url %}
-                                            <iframe id="currentVideo" src="https://www.youtube.com/embed/{{ first_video.video_url|split:'youtu.be/'|last|split:'?'|first }}?autoplay=0" allowfullscreen allow="autoplay; encrypted-media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                            {% with video_id=first_video.video_url|split:'youtu.be/'|last|split:'?'|first %}
+                                            <iframe id="currentVideo" src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1&origin={{ request.scheme }}://{{ request.get_host }}" allowfullscreen allow="autoplay; encrypted-media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                            {% endwith %}
+                                        {% elif '/embed/' in first_video.video_url %}
+                                            <iframe id="currentVideo" src="{{ first_video.video_url }}?enablejsapi=1&origin={{ request.scheme }}://{{ request.get_host }}" allowfullscreen allow="autoplay; encrypted-media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
                                         {% else %}
-                                            <iframe id="currentVideo" src="https://www.youtube.com/embed/{{ first_video.video_url }}?autoplay=0" allowfullscreen allow="autoplay; encrypted-media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                            <iframe id="currentVideo" src="https://www.youtube.com/embed/{{ first_video.video_url }}?enablejsapi=1&origin={{ request.scheme }}://{{ request.get_host }}" allowfullscreen allow="autoplay; encrypted-media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
                                         {% endif %}
                                     {% elif 'vimeo.com' in first_video.video_url %}
                                         <iframe id="currentVideo" src="https://player.vimeo.com/video/{{ first_video.video_url|split:'vimeo.com/'|last|split:'?'|first }}?autoplay=0" allowfullscreen allow="autoplay; encrypted-media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
@@ -285,12 +294,20 @@
                                 <h3 style="margin: 0; color: var(--text-primary);">
                                     <i class="fas fa-file-pdf"></i> {{ first_document.title }}
                                 </h3>
-                                <a href="{% if first_document.document_file %}{{ first_document.document_file.url }}{% else %}{{ first_document.document_url }}{% endif %}" download class="btn-primary">
+                                <a href="{% if first_document.document_file %}{{ first_document.document_file.url }}{% elif first_document.document_url %}{% if first_document.document_url|slice:":4" == "http" %}{{ first_document.document_url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{{ first_document.document_url }}{% endif %}{% endif %}" download class="btn-primary" target="_blank">
                                     <i class="fas fa-download"></i> Download PDF
                                 </a>
                             </div>
                             <div class="pdf-viewer-frame">
-                                <iframe id="currentDocument" src="{% if first_document.document_file %}{{ first_document.document_file.url }}{% else %}{{ first_document.document_url }}{% endif %}#toolbar=1&navpanes=1&scrollbar=1" type="application/pdf" style="width: 100%; height: 100%; border: none;"></iframe>
+                                {% if first_document.document_file %}
+                                    <iframe id="currentDocument" src="{{ first_document.document_file.url }}#toolbar=1&navpanes=1&scrollbar=1" type="application/pdf" style="width: 100%; height: 100%; border: none;"></iframe>
+                                {% elif first_document.document_url %}
+                                    {% if first_document.document_url|slice:":4" == "http" %}
+                                        <iframe id="currentDocument" src="{{ first_document.document_url }}#toolbar=1&navpanes=1&scrollbar=1" type="application/pdf" style="width: 100%; height: 100%; border: none;"></iframe>
+                                    {% else %}
+                                        <iframe id="currentDocument" src="{{ request.scheme }}://{{ request.get_host }}{{ first_document.document_url }}#toolbar=1&navpanes=1&scrollbar=1" type="application/pdf" style="width: 100%; height: 100%; border: none;"></iframe>
+                                    {% endif %}
+                                {% endif %}
                             </div>
                             <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.9rem;">
                                 <i class="fas fa-info-circle"></i> You can scroll to read the document. Click "Download PDF" to save it to your device.
@@ -399,19 +416,26 @@
                     let embedUrl = contentUrl;
                     if (contentUrl.includes('youtube.com/watch')) {
                         const videoId = contentUrl.split('v=')[1]?.split('&')[0];
-                        if (videoId) {
-                            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                        if (videoId && videoId.length === 11) {
+                            embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}`;
                         }
                     } else if (contentUrl.includes('youtu.be/')) {
                         const videoId = contentUrl.split('youtu.be/')[1]?.split('?')[0];
-                        if (videoId) {
-                            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                        if (videoId && videoId.length === 11) {
+                            embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}`;
                         }
+                    } else if (contentUrl.includes('/embed/')) {
+                        embedUrl = `${contentUrl}?enablejsapi=1&origin=${window.location.origin}`;
                     } else if (contentUrl.includes('vimeo.com/')) {
                         const videoId = contentUrl.split('vimeo.com/')[1]?.split('?')[0];
                         if (videoId) {
                             embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=1`;
                         }
+                    }
+                    
+                    if (!embedUrl || embedUrl === contentUrl) {
+                        alert('Invalid video URL. Please check the video link.');
+                        return;
                     }
                     
                     videoHtml = `
@@ -420,7 +444,7 @@
                                 <i class="fas fa-video"></i> ${contentTitle}
                             </h3>
                             <div class="video-wrapper">
-                                <iframe src="${embedUrl}" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                                <iframe src="${embedUrl}" allowfullscreen allow="autoplay; encrypted-media" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
                             </div>
                         </div>
                     `;
@@ -450,12 +474,15 @@
                             <h3 style="margin: 0; color: var(--text-primary);">
                                 <i class="fas fa-file-pdf"></i> ${contentTitle}
                             </h3>
-                            <a href="${contentUrl}" download class="btn-primary">
+                            <a href="${contentUrl.startsWith('http') ? contentUrl : window.location.origin + contentUrl}" download class="btn-primary" target="_blank">
                                 <i class="fas fa-download"></i> Download PDF
                             </a>
                         </div>
                         <div class="pdf-viewer-frame">
-                            <iframe src="${contentUrl}#toolbar=1&navpanes=1&scrollbar=1" type="application/pdf" style="width: 100%; height: 100%; border: none;"></iframe>
+                            ${contentUrl.startsWith('http') ? 
+                                `<iframe src="${contentUrl}#toolbar=1&navpanes=1&scrollbar=1" type="application/pdf" style="width: 100%; height: 100%; border: none;"></iframe>` :
+                                `<iframe src="${window.location.origin}${contentUrl}#toolbar=1&navpanes=1&scrollbar=1" type="application/pdf" style="width: 100%; height: 100%; border: none;"></iframe>`
+                            }
                         </div>
                         <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.9rem;">
                             <i class="fas fa-info-circle"></i> You can scroll to read the document. Click "Download PDF" to save it to your device.

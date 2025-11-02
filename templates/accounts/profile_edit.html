@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile - JobNix</title>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'icons/logo.png' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    {% load static %}
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <script src="{% static 'js/theme-switcher.js' %}"></script>
 </head>
-<body class="dashboard-youth">
+<body class="dashboard-youth" data-user-theme="{{ user.theme_preference|default:'light' }}">
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -134,6 +137,21 @@
                                 {% endif %}
                                 <input type="file" name="resume" accept=".pdf,.doc,.docx">
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Appearance Settings</h3>
+                        <div class="form-group">
+                            <label>Theme Preference *</label>
+                            <select name="theme_preference" required>
+                                <option value="light" {% if user.theme_preference == 'light' %}selected{% endif %}>Light Mode (Bright)</option>
+                                <option value="dark" {% if user.theme_preference == 'dark' %}selected{% endif %}>Dark Mode</option>
+                                <option value="auto" {% if user.theme_preference == 'auto' %}selected{% endif %}>Auto (Follow System)</option>
+                            </select>
+                            <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem;">
+                                <i class="fas fa-info-circle"></i> Your theme preference will be applied to all sections and pages
+                            </small>
                         </div>
                     </div>
 

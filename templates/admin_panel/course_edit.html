@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Course - JobNix Admin</title>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'icons/logo.png' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    {% load static %}
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
 </head>
-<body class="dashboard-admin">
+<body class="dashboard-admin" data-user-theme="{{ user.theme_preference|default:'light' }}">
     <!-- Sidebar -->
     <aside class="sidebar admin-sidebar">
         <div class="sidebar-header">
@@ -148,8 +150,8 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Update Course
+                        <button type="submit" name="update_course" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Course Info
                         </button>
                         <a href="{% url 'admin_panel:course_management' %}" class="btn btn-secondary">
                             <i class="fas fa-times"></i> Cancel
@@ -162,40 +164,144 @@
                     <div class="card-header">
                         <h3><i class="fas fa-video"></i> Course Content (Modules, Videos, Documents)</h3>
                         <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">
-                            Add videos, video links, documents, external resources, and text content to this course
+                            Edit modules, videos, documents, and other content. Each video creates a new section.
                         </p>
                     </div>
-                    <div style="margin-top: 1.5rem;">
-                        <a href="/admin/education/coursemodule/?course__id__exact={{ course.id }}" class="btn btn-primary" target="_blank">
-                            <i class="fas fa-plus"></i> Add Module & Content (Django Admin)
-                        </a>
-                        <a href="/admin/education/coursecontent/?course__id__exact={{ course.id }}" class="btn btn-secondary" target="_blank">
-                            <i class="fas fa-file-alt"></i> Manage Content Directly
-                        </a>
-                    </div>
-                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(99, 102, 241, 0.05); border-radius: var(--radius);">
-                        <h4 style="margin-bottom: 0.5rem;">Current Content:</h4>
-                        {% if course.modules.all %}
-                            <ul style="list-style: none; padding: 0;">
-                                {% for module in course.modules.all %}
-                                <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
-                                    <strong>{{ module.title }}</strong> 
-                                    <span style="color: var(--text-secondary); font-size: 0.85rem;">
-                                        - {{ module.contents.count }} content item{{ module.contents.count|pluralize }}
-                                    </span>
-                                </li>
+                    
+                    <form method="POST" enctype="multipart/form-data" id="content-form">
+                        {% csrf_token %}
+                        <input type="hidden" id="module-count" name="module_count" value="{{ modules|length }}">
+                        
+                        <div id="modules-container">
+                            {% if modules %}
+                                {% for module in modules %}
+                                <div id="module_{{ forloop.counter0 }}" class="module-block" style="background: var(--bg-secondary); padding: 1.5rem; border-radius: var(--radius); margin-bottom: 1.5rem; border: 2px solid var(--border-color);">
+                                    <input type="hidden" name="module_id_{{ forloop.counter0 }}" value="{{ module.id }}">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                        <h4 style="margin: 0;"><i class="fas fa-play-circle"></i> Section {{ forloop.counter }}</h4>
+                                        <button type="button" onclick="deleteModule({{ forloop.counter0 }}, {{ module.id }})" class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                    
+                                    {% with module.contents_list|first as first_content %}
+                                    {% if first_content and first_content.content_type == 'video' %}
+                                    <div class="form-group" style="background: white; padding: 1rem; border-radius: var(--radius); margin-bottom: 1rem; border: 1px solid var(--border-color);">
+                                        <label style="font-weight: 600; color: var(--primary);"><i class="fas fa-video"></i> Section Video</label>
+                                        <input type="hidden" name="section_video_id_{{ forloop.counter0 }}" value="{{ first_content.id }}">
+                                        <div class="form-row" style="margin-top: 0.75rem;">
+                                            <div class="form-group" style="flex: 1;">
+                                                <label>Video URL (YouTube, Vimeo, etc.)</label>
+                                                <input type="url" name="section_video_url_{{ forloop.counter0 }}" value="{% if first_content.video_url %}{{ first_content.video_url }}{% endif %}" placeholder="https://youtube.com/watch?v=...">
+                                            </div>
+                                            <div class="form-group" style="flex: 1;">
+                                                <label>Video Duration (e.g., 10:30)</label>
+                                                <input type="text" name="section_video_duration_{{ forloop.counter0 }}" value="{% if first_content.video_duration %}{{ first_content.video_duration }}{% endif %}" placeholder="10:30">
+                                            </div>
+                                        </div>
+                                        <div class="form-group" style="margin-top: 0.75rem;">
+                                            <label>Or Upload Video File</label>
+                                            <input type="file" name="section_video_file_{{ forloop.counter0 }}" accept="video/*">
+                                            {% if first_content.video_file %}<small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">Current: {{ first_content.video_file.name }}</small>{% endif %}
+                                        </div>
+                                        <div class="form-group" style="margin-top: 0.75rem;">
+                                            <label>Video Title</label>
+                                            <input type="text" name="section_video_title_{{ forloop.counter0 }}" value="{% if first_content.title %}{{ first_content.title }}{% endif %}" placeholder="e.g., Introduction to Course Topic">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Video Description</label>
+                                            <textarea name="section_video_description_{{ forloop.counter0 }}" rows="2">{% if first_content.description %}{{ first_content.description }}{% endif %}</textarea>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% endwith %}
+                                    
+                                    <div class="form-group">
+                                        <label>Section Title *</label>
+                                        <input type="text" name="module_title_{{ forloop.counter0 }}" value="{{ module.title }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Section Description</label>
+                                        <textarea name="module_description_{{ forloop.counter0 }}" rows="2">{{ module.description }}</textarea>
+                                    </div>
+                                    <input type="hidden" name="module_order_{{ forloop.counter0 }}" value="{{ module.order|default:forloop.counter0 }}">
+                                    
+                                    <div style="margin-top: 1rem;">
+                                        <button type="button" onclick="addContentToModule('module_{{ forloop.counter0 }}', {{ forloop.counter0 }})" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;">
+                                            <i class="fas fa-plus"></i> Add Content (Document/Link)
+                                        </button>
+                                    </div>
+                                    
+                                    <div id="module_{{ forloop.counter0 }}_contents">
+                                        {% for content in module.contents_list %}
+                                        {% if not forloop.first or content.content_type != 'video' %}
+                                        <div class="content-item" style="background: white; padding: 1rem; border-radius: var(--radius); margin-top: 0.75rem; border: 1px solid var(--border-color);">
+                                            <input type="hidden" name="content_id_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}" value="{{ content.id }}">
+                                            <input type="hidden" name="content_module_index_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}" value="{{ forloop.parentloop.counter0 }}">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                                <select name="content_type_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}" required style="flex: 1; margin-right: 0.5rem;">
+                                                    <option value="document" {% if content.content_type == 'document' %}selected{% endif %}>Document</option>
+                                                    <option value="link" {% if content.content_type == 'link' %}selected{% endif %}>External Link</option>
+                                                    <option value="text" {% if content.content_type == 'text' %}selected{% endif %}>Text Content</option>
+                                                </select>
+                                                <button type="button" onclick="deleteContent({{ content.id }})" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Content Title *</label>
+                                                <input type="text" name="content_title_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}" value="{{ content.title }}" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Description</label>
+                                                <textarea name="content_description_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}" rows="2">{{ content.description }}</textarea>
+                                            </div>
+                                            {% if content.content_type == 'document' %}
+                                            <div class="form-group">
+                                                <label>Document URL</label>
+                                                <input type="url" name="document_url_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}" value="{% if content.document_url %}{{ content.document_url }}{% endif %}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Or Upload Document</label>
+                                                <input type="file" name="document_file_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}" accept=".pdf,.doc,.docx">
+                                                {% if content.document_file %}<small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">Current: {{ content.document_file.name }}</small>{% endif %}
+                                            </div>
+                                            {% elif content.content_type == 'link' %}
+                                            <div class="form-group">
+                                                <label>External Link URL *</label>
+                                                <input type="url" name="external_link_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}" value="{% if content.external_link %}{{ content.external_link }}{% endif %}" required>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
                                 {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p style="color: var(--text-secondary); margin: 0;">No modules or content added yet. Use Django Admin to add content.</p>
-                        {% endif %}
-                    </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <button type="button" onclick="addModule()" class="btn btn-secondary">
+                                <i class="fas fa-plus"></i> Add New Module
+                            </button>
+                        </div>
+                        
+                        <div class="form-actions" style="margin-top: 2rem;">
+                            <button type="submit" name="update_content" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Content Changes
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
+        let moduleCount = {{ modules|length|default:0 }};
+        let contentCount = 0;
+        
         function togglePriceField() {
             const isFree = document.getElementById('is_free').checked;
             const priceField = document.getElementById('price');
@@ -207,7 +313,137 @@
             }
         }
         
-        // Initialize on page load
+        function addModule() {
+            const moduleId = `module_${moduleCount}`;
+            const moduleIndex = moduleCount++;
+            const moduleHtml = `
+                <div id="${moduleId}" class="module-block" style="background: var(--bg-secondary); padding: 1.5rem; border-radius: var(--radius); margin-bottom: 1.5rem; border: 2px solid var(--border-color);">
+                    <input type="hidden" name="module_id_${moduleIndex}" value="">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="margin: 0;"><i class="fas fa-play-circle"></i> New Section ${moduleIndex + 1}</h4>
+                        <button type="button" onclick="removeModule('${moduleId}')" class="btn btn-danger" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </div>
+                    <div class="form-group" style="background: white; padding: 1rem; border-radius: var(--radius); margin-bottom: 1rem; border: 1px solid var(--border-color);">
+                        <label style="font-weight: 600; color: var(--primary);"><i class="fas fa-video"></i> Section Video</label>
+                        <input type="hidden" name="section_video_id_${moduleIndex}" value="">
+                        <div class="form-row" style="margin-top: 0.75rem;">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Video URL (YouTube, Vimeo, etc.)</label>
+                                <input type="url" name="section_video_url_${moduleIndex}" placeholder="https://youtube.com/watch?v=...">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Video Duration (e.g., 10:30)</label>
+                                <input type="text" name="section_video_duration_${moduleIndex}" placeholder="10:30">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 0.75rem;">
+                            <label>Or Upload Video File</label>
+                            <input type="file" name="section_video_file_${moduleIndex}" accept="video/*">
+                        </div>
+                        <div class="form-group" style="margin-top: 0.75rem;">
+                            <label>Video Title</label>
+                            <input type="text" name="section_video_title_${moduleIndex}" placeholder="e.g., Introduction to Course Topic">
+                        </div>
+                        <div class="form-group">
+                            <label>Video Description</label>
+                            <textarea name="section_video_description_${moduleIndex}" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Section Title *</label>
+                        <input type="text" name="module_title_${moduleIndex}" required placeholder="e.g., Introduction to Python">
+                    </div>
+                    <div class="form-group">
+                        <label>Section Description</label>
+                        <textarea name="module_description_${moduleIndex}" rows="2"></textarea>
+                    </div>
+                    <input type="hidden" name="module_order_${moduleIndex}" value="${moduleIndex}">
+                    <div style="margin-top: 1rem;">
+                        <button type="button" onclick="addContentToModule('${moduleId}', ${moduleIndex})" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;">
+                            <i class="fas fa-plus"></i> Add Content
+                        </button>
+                    </div>
+                    <div id="module_${moduleIndex}_contents"></div>
+                </div>
+            `;
+            document.getElementById('modules-container').insertAdjacentHTML('beforeend', moduleHtml);
+            document.getElementById('module-count').value = moduleCount;
+        }
+        
+        function addContentToModule(moduleId, moduleIndex) {
+            const contentId = `content_${contentCount++}`;
+            const contentHtml = `
+                <div id="${contentId}" class="content-item" style="background: white; padding: 1rem; border-radius: var(--radius); margin-top: 0.75rem; border: 1px solid var(--border-color);">
+                    <input type="hidden" name="content_id_${moduleIndex}_${contentCount - 1}" value="">
+                    <input type="hidden" name="content_module_index_${moduleIndex}_${contentCount - 1}" value="${moduleIndex}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <select name="content_type_${moduleIndex}_${contentCount - 1}" required style="flex: 1; margin-right: 0.5rem;">
+                            <option value="document">Document</option>
+                            <option value="link">External Link</option>
+                            <option value="text">Text Content</option>
+                        </select>
+                        <button type="button" onclick="removeContentItem('${contentId}')" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="form-group">
+                        <label>Content Title *</label>
+                        <input type="text" name="content_title_${moduleIndex}_${contentCount - 1}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea name="content_description_${moduleIndex}_${contentCount - 1}" rows="2"></textarea>
+                    </div>
+                    <div class="form-group document-fields">
+                        <label>Document URL</label>
+                        <input type="url" name="document_url_${moduleIndex}_${contentCount - 1}">
+                    </div>
+                    <div class="form-group document-fields">
+                        <label>Or Upload Document</label>
+                        <input type="file" name="document_file_${moduleIndex}_${contentCount - 1}" accept=".pdf,.doc,.docx">
+                    </div>
+                    <div class="form-group link-fields" style="display: none;">
+                        <label>External Link URL *</label>
+                        <input type="url" name="external_link_${moduleIndex}_${contentCount - 1}">
+                    </div>
+                </div>
+            `;
+            document.getElementById(`module_${moduleIndex}_contents`).insertAdjacentHTML('beforeend', contentHtml);
+        }
+        
+        function removeModule(moduleId) {
+            if (confirm('Delete this module and all its content?')) {
+                document.getElementById(moduleId).remove();
+                document.getElementById('module-count').value = document.querySelectorAll('.module-block').length;
+            }
+        }
+        
+        function deleteModule(index, moduleId) {
+            if (confirm('Delete this module and all its content?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.innerHTML = `{% csrf_token %}<input type="hidden" name="delete_module"><input type="hidden" name="module_id" value="${moduleId}">`;
+                document.getElementById('content-form').appendChild(form);
+                form.submit();
+            }
+        }
+        
+        function deleteContent(contentId) {
+            if (confirm('Delete this content item?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.innerHTML = `{% csrf_token %}<input type="hidden" name="delete_content"><input type="hidden" name="content_id" value="${contentId}">`;
+                document.getElementById('content-form').appendChild(form);
+                form.submit();
+            }
+        }
+        
+        function removeContentItem(contentId) {
+            document.getElementById(contentId).remove();
+        }
+        
         togglePriceField();
     </script>
 </body>

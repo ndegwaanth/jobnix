@@ -529,6 +529,10 @@ def profile_edit_view(request):
         user.last_name = request.POST.get('last_name', user.last_name)
         user.email = request.POST.get('email', user.email)
         user.phone = request.POST.get('phone', user.phone)
+        # Save theme preference
+        theme_pref = request.POST.get('theme_preference', 'light')
+        if theme_pref in ['light', 'dark', 'auto']:
+            user.theme_preference = theme_pref
         user.save()
         
         profile.education_level = request.POST.get('education_level', profile.education_level)
@@ -544,7 +548,8 @@ def profile_edit_view(request):
         
         profile.save()
         messages.success(request, 'Profile updated successfully!')
-        return redirect('accounts:dashboard')
+        # Sync theme with localStorage
+        return redirect('accounts:profile_edit')
     
     context = {'user': user, 'profile': profile}
     return render(request, 'accounts/profile_edit.html', context)
@@ -813,12 +818,18 @@ def company_profile_edit_view(request):
         profile.contact_email = request.POST.get('contact_email', profile.contact_email)
         profile.contact_phone = request.POST.get('contact_phone', profile.contact_phone)
         
+        # Save theme preference
+        theme_pref = request.POST.get('theme_preference', 'light')
+        if theme_pref in ['light', 'dark', 'auto']:
+            user.theme_preference = theme_pref
+            user.save()
+        
         if 'company_logo' in request.FILES:
             profile.company_logo = request.FILES['company_logo']
         
         profile.save()
         messages.success(request, 'Company profile updated successfully!')
-        return redirect('accounts:dashboard')
+        return redirect('accounts:company_profile_edit')
     
     context = {'user': user, 'profile': profile}
     return render(request, 'accounts/company_profile_edit.html', context)

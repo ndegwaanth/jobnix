@@ -54,12 +54,21 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// Initialize theme on page load
+// Initialize theme on page load - check localStorage, server preference, and apply
 document.addEventListener('DOMContentLoaded', function() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    // First check server preference (from database)
+    let savedTheme = 'light';
+    if (document.body.dataset.userTheme) {
+        savedTheme = document.body.dataset.userTheme;
+        localStorage.setItem('theme', savedTheme);
+    } else {
+        savedTheme = localStorage.getItem('theme') || 'light';
+    }
+    
     const body = document.body;
     const themeIcons = document.querySelectorAll('#theme-icon');
     
+    // Apply theme immediately
     if (savedTheme === 'dark') {
         body.classList.add('dark-theme');
         body.classList.remove('light-theme');
@@ -75,5 +84,17 @@ document.addEventListener('DOMContentLoaded', function() {
             icon.className = 'fas fa-moon';
         });
     }
+    
+    // Ensure theme persists across all pages
+    document.querySelectorAll('a, button, form').forEach(el => {
+        if (el.onclick || el.href) {
+            const originalOnClick = el.onclick;
+            el.addEventListener('click', function(e) {
+                // Save theme before navigation
+                const currentTheme = body.classList.contains('dark-theme') ? 'dark' : 'light';
+                localStorage.setItem('theme', currentTheme);
+            });
+        }
+    });
 });
 

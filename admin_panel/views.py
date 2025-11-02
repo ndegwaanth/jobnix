@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from django.utils import timezone
+from django.db import transaction
 from datetime import timedelta
 from django.http import HttpResponse
 import csv
@@ -10,7 +11,7 @@ import csv
 # Import models
 from accounts.models import User, Notification as UserNotification, SupportTicket
 from jobs.models import Job, Application
-from education.models import Course, Enrollment, Payment
+from education.models import Course, Enrollment, Payment, CourseModule, CourseContent
 from django.db.models import Sum, Count, Q
 
 # Create your views here.
@@ -388,7 +389,8 @@ def course_add_view(request):
     
     if request.method == 'POST':
         try:
-            course = Course.objects.create(
+            with transaction.atomic():
+                course = Course.objects.create(
                 title=request.POST.get('title'),
                 description=request.POST.get('description'),
                 category=request.POST.get('category', ''),
@@ -414,48 +416,76 @@ def course_add_view(request):
             
             # Handle course content creation (modules and contents)
             # Process all modules/sections
+            # Debug: Print all POST keys to see what's being sent
+            import sys
+            print(f"POST keys: {list(request.POST.keys())}", file=sys.stderr)
+            print(f"FILES keys: {list(request.FILES.keys())}", file=sys.stderr)
+            
             i = 0
-            while True:
-                module_title = request.POST.get(f'module_title_{i}')
+            modules_created = 0
+            while i < 100:  # Safety limit
+                module_title = request.POST.get(f'module_title_{i}', '').strip()
                 if not module_title:
-                    break
+                    # Try to find modules with any available index
+                    found = False
+                    for j in range(i, i + 10):
+                        test_title = request.POST.get(f'module_title_{j}', '').strip()
+                        if test_title:
+                            i = j
+                            module_title = test_title
+                            found = True
+                            break
+                    if not found:
+                        break
                 
                 # Check if section has video (required)
                 section_video_url = request.POST.get(f'section_video_url_{i}', '').strip()
                 section_video_file = request.FILES.get(f'section_video_file_{i}')
                 section_video_title = request.POST.get(f'section_video_title_{i}', '').strip()
                 
+                # Debug log
+                import sys
+                print(f"Processing module {i}: title={module_title}, video_url={section_video_url[:50] if section_video_url else 'None'}, video_file={bool(section_video_file)}", file=sys.stderr)
+                
                 if not section_video_url and not section_video_file:
                     i += 1
                     continue  # Skip sections without videos
                 
                 # Create module (section)
-                module = CourseModule.objects.create(
-                    course=course,
-                    title=module_title,
-                    description=request.POST.get(f'module_description_{i}', ''),
-                    order=int(request.POST.get(f'module_order_{i}', i) or i)
-                )
-                
-                # Create video content for this section (primary video)
-                if section_video_title or section_video_url or section_video_file:
-                    video_content = CourseContent.objects.create(
+                try:
+                    module = CourseModule.objects.create(
                         course=course,
-                        module=module,
-                        content_type='video',
-                        title=section_video_title or f"{module_title} - Video",
-                        description=request.POST.get(f'section_video_description_{i}', ''),
-                        order=0  # Video is always first in section
+                        title=module_title,
+                        description=request.POST.get(f'module_description_{i}', ''),
+                        order=int(request.POST.get(f'module_order_{i}', i) or i)
                     )
+                    modules_created += 1
+                    print(f"Created module: {module.id} - {module.title}", file=sys.stderr)
                     
-                    if section_video_url:
-                        video_content.video_url = section_video_url
-                    if section_video_file:
-                        video_content.video_file = section_video_file
-                    
-                    video_content.video_duration = request.POST.get(f'section_video_duration_{i}', '')
-                    video_content.is_free_preview = False  # Main video is not free preview
-                    video_content.save()
+                    # Create video content for this section (primary video)
+                    if section_video_title or section_video_url or section_video_file:
+                        video_content = CourseContent.objects.create(
+                            course=course,
+                            module=module,
+                            content_type='video',
+                            title=section_video_title or f"{module_title} - Video",
+                            description=request.POST.get(f'section_video_description_{i}', ''),
+                            order=0  # Video is always first in section
+                        )
+                        
+                        if section_video_url:
+                            video_content.video_url = section_video_url
+                        if section_video_file:
+                            video_content.video_file = section_video_file
+                        
+                        video_content.video_duration = request.POST.get(f'section_video_duration_{i}', '')
+                        video_content.is_free_preview = False  # Main video is not free preview
+                        video_content.save()
+                        print(f"Created video content: {video_content.id} - {video_content.title}", file=sys.stderr)
+                except Exception as module_error:
+                    print(f"Error creating module {i}: {str(module_error)}", file=sys.stderr)
+                    import traceback
+                    traceback.print_exc(file=sys.stderr)
                 
                 # Process subsection content items for this module (documents, links, text, etc.)
                 j = 0
@@ -503,7 +533,8 @@ def course_add_view(request):
                 
                 i += 1
             
-            messages.success(request, f'Course "{course.title}" created successfully')
+                messages.success(request, f'Course "{course.title}" created successfully with {modules_created} module(s)')
+                print(f"Total modules created: {modules_created}", file=sys.stderr)
             return redirect('admin_panel:course_edit', course_id=course.id)
         except Exception as e:
             messages.error(request, f'Error creating course: {str(e)}')
@@ -522,35 +553,220 @@ def course_edit_view(request, course_id):
     
     if request.method == 'POST':
         try:
-            course.title = request.POST.get('title')
-            course.description = request.POST.get('description')
-            course.category = request.POST.get('category', '')
-            course.skills_taught = request.POST.get('skills_taught', '')
-            course.level = request.POST.get('level', 'beginner')
-            course.duration_hours = int(request.POST.get('duration_hours', 0) or 0)
-            course.price = float(request.POST.get('price', 0) or 0)
-            course.is_free = request.POST.get('is_free') == 'on'
-            course.status = request.POST.get('status', 'pending')
-            course.is_active = request.POST.get('is_active') == 'on'
-            
-            # Handle instructor assignment
-            instructor_id = request.POST.get('instructor')
-            if instructor_id:
-                try:
-                    instructor = User.objects.get(id=instructor_id, role__in=['institution', 'employer'])
-                    course.instructor = instructor
-                except User.DoesNotExist:
-                    course.instructor = None
-            else:
-                course.instructor = None
-            
-            course.save()
-            messages.success(request, f'Course "{course.title}" updated successfully')
-            return redirect('admin_panel:course_management')
+            with transaction.atomic():
+                # Update course basic info
+                if 'update_course' in request.POST:
+                    course.title = request.POST.get('title')
+                    course.description = request.POST.get('description')
+                    course.category = request.POST.get('category', '')
+                    course.skills_taught = request.POST.get('skills_taught', '')
+                    course.level = request.POST.get('level', 'beginner')
+                    course.duration_hours = int(request.POST.get('duration_hours', 0) or 0)
+                    course.price = float(request.POST.get('price', 0) or 0)
+                    course.is_free = request.POST.get('is_free') == 'on'
+                    course.status = request.POST.get('status', 'pending')
+                    course.is_active = request.POST.get('is_active') == 'on'
+                    
+                    # Handle instructor assignment
+                    instructor_id = request.POST.get('instructor')
+                    if instructor_id:
+                        try:
+                            instructor = User.objects.get(id=instructor_id, role__in=['institution', 'employer'])
+                            course.instructor = instructor
+                        except User.DoesNotExist:
+                            course.instructor = None
+                    else:
+                        course.instructor = None
+                    
+                    course.save()
+                    messages.success(request, f'Course "{course.title}" updated successfully')
+                    return redirect('admin_panel:course_edit', course_id=course.id)
+                
+                # Handle module/content updates
+                elif 'update_content' in request.POST:
+                    import sys
+                    import re
+                    
+                    # Process new or updated modules
+                    module_indices = set()
+                    for key in request.POST.keys():
+                        match = re.match(r'module_title_(\d+)', key)
+                        if match:
+                            module_indices.add(int(match.group(1)))
+                    
+                    modules_updated = 0
+                    for i in sorted(module_indices):
+                        module_id = request.POST.get(f'module_id_{i}')
+                        module_title = request.POST.get(f'module_title_{i}', '').strip()
+                        
+                        if not module_title:
+                            continue
+                        
+                        section_video_url = request.POST.get(f'section_video_url_{i}', '').strip()
+                        section_video_file = request.FILES.get(f'section_video_file_{i}')
+                        section_video_title = request.POST.get(f'section_video_title_{i}', '').strip()
+                        
+                        # Update or create module
+                        if module_id and module_id.isdigit():
+                            try:
+                                module = CourseModule.objects.get(id=int(module_id), course=course)
+                                module.title = module_title
+                                module.description = request.POST.get(f'module_description_{i}', '')
+                                module.order = int(request.POST.get(f'module_order_{i}', i) or i)
+                                module.save()
+                            except CourseModule.DoesNotExist:
+                                module = CourseModule.objects.create(
+                                    course=course,
+                                    title=module_title,
+                                    description=request.POST.get(f'module_description_{i}', ''),
+                                    order=int(request.POST.get(f'module_order_{i}', i) or i)
+                                )
+                        else:
+                            module = CourseModule.objects.create(
+                                course=course,
+                                title=module_title,
+                                description=request.POST.get(f'module_description_{i}', ''),
+                                order=int(request.POST.get(f'module_order_{i}', i) or i)
+                            )
+                        
+                        # Update or create video content
+                        if section_video_url or section_video_file or section_video_title:
+                            video_content_id = request.POST.get(f'section_video_id_{i}')
+                            if video_content_id and video_content_id.isdigit():
+                                try:
+                                    video_content = CourseContent.objects.get(id=int(video_content_id), module=module)
+                                    video_content.title = section_video_title or f"{module_title} - Video"
+                                    video_content.description = request.POST.get(f'section_video_description_{i}', '')
+                                    if section_video_url:
+                                        video_content.video_url = section_video_url
+                                    if section_video_file:
+                                        video_content.video_file = section_video_file
+                                    video_content.video_duration = request.POST.get(f'section_video_duration_{i}', '')
+                                    video_content.save()
+                                except CourseContent.DoesNotExist:
+                                    video_content = CourseContent.objects.create(
+                                        course=course,
+                                        module=module,
+                                        content_type='video',
+                                        title=section_video_title or f"{module_title} - Video",
+                                        description=request.POST.get(f'section_video_description_{i}', ''),
+                                        order=0,
+                                        video_url=section_video_url if section_video_url else '',
+                                    )
+                                    if section_video_file:
+                                        video_content.video_file = section_video_file
+                                    video_content.save()
+                            else:
+                                video_content = CourseContent.objects.create(
+                                    course=course,
+                                    module=module,
+                                    content_type='video',
+                                    title=section_video_title or f"{module_title} - Video",
+                                    description=request.POST.get(f'section_video_description_{i}', ''),
+                                    order=0,
+                                    video_url=section_video_url if section_video_url else '',
+                                )
+                                if section_video_file:
+                                    video_content.video_file = section_video_file
+                                video_content.save()
+                        
+                        # Process subsection content
+                        j = 0
+                        while True:
+                            content_module_index = request.POST.get(f'content_module_index_{j}')
+                            if content_module_index is None or int(content_module_index) != i:
+                                j += 1
+                                if j > 1000:  # Safety limit
+                                    break
+                                continue
+                            
+                            content_id = request.POST.get(f'content_id_{j}')
+                            content_type = request.POST.get(f'content_type_{j}')
+                            content_title = request.POST.get(f'content_title_{j}')
+                            
+                            if not content_type or not content_title:
+                                j += 1
+                                continue
+                            
+                            if content_id and content_id.isdigit():
+                                try:
+                                    content = CourseContent.objects.get(id=int(content_id), module=module)
+                                    content.content_type = content_type
+                                    content.title = content_title
+                                    content.description = request.POST.get(f'content_description_{i}_{content_index}', '')
+                                    
+                                    if content_type == 'document':
+                                        content.document_url = request.POST.get(f'document_url_{i}_{content_index}', '')
+                                        if f'document_file_{i}_{content_index}' in request.FILES:
+                                            content.document_file = request.FILES[f'document_file_{i}_{content_index}']
+                                    elif content_type == 'link':
+                                        content.external_link = request.POST.get(f'external_link_{i}_{content_index}', '')
+                                    
+                                    content.save()
+                                except CourseContent.DoesNotExist:
+                                    pass
+                            else:
+                                # Create new content
+                                content = CourseContent.objects.create(
+                                    course=course,
+                                    module=module,
+                                    content_type=content_type,
+                                    title=content_title,
+                                    description=request.POST.get(f'content_description_{i}_{content_index}', ''),
+                                    order=int(request.POST.get(f'content_order_{i}_{content_index}', subsection_order) or subsection_order)
+                                )
+                                
+                                if content_type == 'document':
+                                    content.document_url = request.POST.get(f'document_url_{i}_{content_index}', '')
+                                    if f'document_file_{i}_{content_index}' in request.FILES:
+                                        content.document_file = request.FILES[f'document_file_{i}_{content_index}']
+                                elif content_type == 'link':
+                                    content.external_link = request.POST.get(f'external_link_{i}_{content_index}', '')
+                                
+                                content.save()
+                                subsection_order += 1
+                        
+                        modules_updated += 1
+                    
+                    messages.success(request, f'Course content updated successfully with {modules_updated} module(s)')
+                    return redirect('admin_panel:course_edit', course_id=course.id)
+                
+                # Handle module/content deletion
+                elif 'delete_module' in request.POST:
+                    module_id = request.POST.get('module_id')
+                    if module_id:
+                        try:
+                            module = CourseModule.objects.get(id=module_id, course=course)
+                            module_title = module.title
+                            module.delete()
+                            messages.success(request, f'Module "{module_title}" deleted successfully')
+                        except CourseModule.DoesNotExist:
+                            messages.error(request, 'Module not found')
+                    return redirect('admin_panel:course_edit', course_id=course.id)
+                
+                elif 'delete_content' in request.POST:
+                    content_id = request.POST.get('content_id')
+                    if content_id:
+                        try:
+                            content = CourseContent.objects.get(id=content_id, course=course)
+                            content_title = content.title
+                            content.delete()
+                            messages.success(request, f'Content "{content_title}" deleted successfully')
+                        except CourseContent.DoesNotExist:
+                            messages.error(request, 'Content not found')
+                    return redirect('admin_panel:course_edit', course_id=course.id)
+                    
         except Exception as e:
+            import traceback
             messages.error(request, f'Error updating course: {str(e)}')
+            print(traceback.format_exc())
     
     instructors = User.objects.filter(role__in=['institution', 'employer'])
+    
+    # Get existing modules and contents
+    modules = CourseModule.objects.filter(course=course).prefetch_related('contents').order_by('order', 'created_at')
+    for module in modules:
+        module.contents_list = module.contents.all().order_by('order', 'created_at')
     
     # Get earnings and enrollment stats
     course.total_earnings = Payment.objects.filter(
@@ -563,6 +779,7 @@ def course_edit_view(request, course_id):
     context = {
         'course': course,
         'instructors': instructors,
+        'modules': modules,
     }
     return render(request, 'admin_panel/course_edit.html', context)
 

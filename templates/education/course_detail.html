@@ -4,14 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ course.title }} - JobNix</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     {% load static %}
     {% load account_filters %}
+    <link rel="icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <script src="{% static 'js/theme-switcher.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/advanced_styles.css' %}">
 </head>
-<body class="dashboard-youth">
+<body class="dashboard-youth" data-user-theme="{% if user.is_authenticated %}{{ user.theme_preference|default:'light' }}{% else %}light{% endif %}">
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -333,19 +336,26 @@
                 // Convert YouTube URL to embed format
                 if (videoUrl.includes('youtube.com/watch')) {
                     const videoId = videoUrl.split('v=')[1]?.split('&')[0];
-                    if (videoId) {
-                        embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                    if (videoId && videoId.length === 11) {
+                        embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}`;
                     }
                 } else if (videoUrl.includes('youtu.be/')) {
                     const videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
-                    if (videoId) {
-                        embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                    if (videoId && videoId.length === 11) {
+                        embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}`;
                     }
+                } else if (videoUrl.includes('/embed/')) {
+                    embedUrl = `${videoUrl}?enablejsapi=1&origin=${window.location.origin}`;
                 } else if (videoUrl.includes('vimeo.com/')) {
                     const videoId = videoUrl.split('vimeo.com/')[1]?.split('?')[0];
                     if (videoId) {
                         embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=1`;
                     }
+                }
+                
+                if (!embedUrl || embedUrl === videoUrl) {
+                    alert('Invalid video URL. Please check the video link.');
+                    return;
                 }
                 
                 videoIframe.src = embedUrl;
