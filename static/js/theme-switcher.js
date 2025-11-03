@@ -54,9 +54,43 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// Function to apply theme immediately
+function applyTheme(theme) {
+    const body = document.body;
+    const themeIcons = document.querySelectorAll('#theme-icon');
+    
+    if (theme === 'dark') {
+        body.classList.add('dark-theme');
+        body.classList.remove('light-theme');
+        themeIcons.forEach(icon => {
+            icon.className = 'fas fa-sun';
+        });
+    } else {
+        body.classList.remove('dark-theme');
+        body.classList.add('light-theme');
+        themeIcons.forEach(icon => {
+            icon.className = 'fas fa-moon';
+        });
+    }
+    localStorage.setItem('theme', theme);
+}
+
 // Initialize theme on page load - check localStorage, server preference, and apply
+(function() {
+    // Apply theme IMMEDIATELY (before DOM is ready) to prevent flash
+    let savedTheme = 'light';
+    if (document.body && document.body.dataset.userTheme) {
+        savedTheme = document.body.dataset.userTheme;
+        localStorage.setItem('theme', savedTheme);
+        applyTheme(savedTheme);
+    } else {
+        savedTheme = localStorage.getItem('theme') || 'light';
+        applyTheme(savedTheme);
+    }
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
-    // First check server preference (from database)
+    // Re-apply theme after DOM loads (in case body wasn't available before)
     let savedTheme = 'light';
     if (document.body.dataset.userTheme) {
         savedTheme = document.body.dataset.userTheme;
@@ -64,37 +98,23 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         savedTheme = localStorage.getItem('theme') || 'light';
     }
+    applyTheme(savedTheme);
     
-    const body = document.body;
-    const themeIcons = document.querySelectorAll('#theme-icon');
+    // Ensure theme persists across all page navigations
+    document.querySelectorAll('a[href], button[type="submit"], form').forEach(el => {
+        el.addEventListener('click', function(e) {
+            // Save current theme before navigation
+            const currentTheme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+            localStorage.setItem('theme', currentTheme);
+        }, true); // Use capture phase to ensure it runs before navigation
+    });
     
-    // Apply theme immediately
-    if (savedTheme === 'dark') {
-        body.classList.add('dark-theme');
-        body.classList.remove('light-theme');
-        // Update all theme icons
-        themeIcons.forEach(icon => {
-            icon.className = 'fas fa-sun';
+    // Also intercept form submissions
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const currentTheme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+            localStorage.setItem('theme', currentTheme);
         });
-    } else {
-        body.classList.remove('dark-theme');
-        body.classList.add('light-theme');
-        // Update all theme icons
-        themeIcons.forEach(icon => {
-            icon.className = 'fas fa-moon';
-        });
-    }
-    
-    // Ensure theme persists across all pages
-    document.querySelectorAll('a, button, form').forEach(el => {
-        if (el.onclick || el.href) {
-            const originalOnClick = el.onclick;
-            el.addEventListener('click', function(e) {
-                // Save theme before navigation
-                const currentTheme = body.classList.contains('dark-theme') ? 'dark' : 'light';
-                localStorage.setItem('theme', currentTheme);
-            });
-        }
     });
 });
 

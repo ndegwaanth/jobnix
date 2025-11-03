@@ -4,20 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - JobNix</title>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'icons/logo.png' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    {% load static %}
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
     <link rel="stylesheet" href="{% static 'css/advanced_styles.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'js/theme-switcher.js' %}"></script>
 </head>
-<body class="dashboard-admin">
+<body class="dashboard-admin" data-user-theme="{{ user.theme_preference|default:'light' }}">
     <!-- Sidebar -->
     <aside class="sidebar admin-sidebar">
         <div class="sidebar-header">
             <div class="logo">
-                <i class="fas fa-shield-alt"></i>
+                <img src="{% static 'icons/logo.png' %}" alt="JobNix Logo" style="width: 32px; height: 32px; margin-right: 8px; object-fit: contain;">
                 <span>Job<span class="accent">Nix</span> Admin</span>
             </div>
         </div>
@@ -53,6 +56,10 @@
             <a href="{% url 'admin_panel:system_notifications' %}" class="nav-item">
                 <i class="fas fa-bullhorn"></i>
                 <span>System Notifications</span>
+            </a>
+            <a href="{% url 'admin_panel:admin_employer_chat' %}" class="nav-item">
+                <i class="fas fa-comments"></i>
+                <span>Chat with Employers</span>
             </a>
             <a href="/admin/" class="nav-item">
                 <i class="fas fa-cog"></i>

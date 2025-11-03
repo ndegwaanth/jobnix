@@ -695,12 +695,18 @@ def notifications_view(request):
 
 @login_required
 def messages_view(request):
-    """View messages/chat"""
+    """View messages/chat - Youth to Youth"""
     from .models import Message
+    from django.db.models import Q
     
-    # Get conversations (unique senders/receivers)
-    sent_messages = Message.objects.filter(sender=request.user)
-    received_messages = Message.objects.filter(receiver=request.user)
+    # Only allow youth users to chat with other youth
+    if request.user.role != 'youth':
+        messages.error(request, 'This chat is only available for youth/job seekers.')
+        return redirect('accounts:dashboard')
+    
+    # Get conversations with other youth users only
+    sent_messages = Message.objects.filter(sender=request.user, receiver__role='youth')
+    received_messages = Message.objects.filter(receiver=request.user, sender__role='youth')
     
     # Get unique users in conversations
     conversation_partners = set()
@@ -712,42 +718,129 @@ def messages_view(request):
     # Get conversation with specific user
     user_id = request.GET.get('with')
     messages_list = []
+    current_chat_user = None
     if user_id:
         try:
-            other_user = User.objects.get(id=user_id)
+            current_chat_user = User.objects.get(id=user_id, role='youth')
             messages_list = Message.objects.filter(
-                (Q(sender=request.user, receiver=other_user) |
-                 Q(sender=other_user, receiver=request.user))
+                (Q(sender=request.user, receiver=current_chat_user) |
+                 Q(sender=current_chat_user, receiver=request.user))
             ).order_by('created_at')
             
             # Mark as read
-            Message.objects.filter(sender=other_user, receiver=request.user, is_read=False).update(is_read=True)
+            Message.objects.filter(sender=current_chat_user, receiver=request.user, is_read=False).update(is_read=True)
         except User.DoesNotExist:
-            pass
+            messages.error(request, 'User not found')
     
     # Send message
     if request.method == 'POST':
         receiver_id = request.POST.get('receiver_id')
-        message_text = request.POST.get('message')
+        message_text = request.POST.get('message', '').strip()
         if receiver_id and message_text:
             try:
-                receiver = User.objects.get(id=receiver_id)
+                receiver = User.objects.get(id=receiver_id, role='youth')
                 Message.objects.create(
                     sender=request.user,
                     receiver=receiver,
                     message=message_text
                 )
-                messages.success(request, 'Message sent!')
                 return redirect(f"{request.path}?with={receiver_id}")
             except User.DoesNotExist:
                 messages.error(request, 'User not found')
     
+    # Get list of all youth users for new chat
+    all_youth_users = User.objects.filter(role='youth').exclude(id=request.user.id).order_by('first_name', 'username')
+    
     context = {
-        'conversation_partners': conversation_partners,
+        'conversation_partners': sorted(conversation_partners, key=lambda x: x.username),
         'messages': messages_list,
         'current_user_id': user_id,
+        'current_chat_user': current_chat_user,
+        'all_youth_users': all_youth_users,
     }
-    return render(request, 'accounts/messages.html', context)
+    return render(request, 'accounts/messages_youth.html', context)
+
+
+@login_required
+def employer_admin_chat_view(request):
+    """Chat between Employer and Admin"""
+    from .models import Message
+    from django.db.models import Q
+    
+    # Check if user is employer or admin
+    if request.user.role not in ['employer', 'admin']:
+        messages.error(request, 'Access denied.')
+        return redirect('accounts:dashboard')
+    
+    # Determine chat partner
+    if request.user.role == 'employer':
+        # Employer chats with admin
+        chat_partners = User.objects.filter(role='admin').order_by('username')
+        default_partner = chat_partners.first() if chat_partners.exists() else None
+    else:
+        # Admin can chat with any employer
+        chat_partners = User.objects.filter(role='employer').order_by('username')
+        default_partner = None
+    
+    # Get selected partner
+    partner_id = request.GET.get('with')
+    if partner_id:
+        try:
+            chat_partner = User.objects.get(id=partner_id)
+            # Ensure valid partner based on role
+            if request.user.role == 'employer' and chat_partner.role != 'admin':
+                chat_partner = default_partner
+            elif request.user.role == 'admin' and chat_partner.role != 'employer':
+                chat_partner = None
+        except User.DoesNotExist:
+            chat_partner = default_partner
+    else:
+        chat_partner = default_partner
+    
+    # Get messages with selected partner
+    messages_list = []
+    if chat_partner:
+        messages_list = Message.objects.filter(
+            (Q(sender=request.user, receiver=chat_partner) |
+             Q(sender=chat_partner, receiver=request.user))
+        ).order_by('created_at')
+        
+        # Mark as read
+        Message.objects.filter(sender=chat_partner, receiver=request.user, is_read=False).update(is_read=True)
+    
+    # Send message
+    if request.method == 'POST':
+        receiver_id = request.POST.get('receiver_id')
+        message_text = request.POST.get('message', '').strip()
+        if receiver_id and message_text:
+            try:
+                receiver = User.objects.get(id=receiver_id)
+                # Validate receiver based on user role
+                if request.user.role == 'employer' and receiver.role != 'admin':
+                    messages.error(request, 'Invalid receiver')
+                elif request.user.role == 'admin' and receiver.role != 'employer':
+                    messages.error(request, 'Invalid receiver')
+                else:
+                    Message.objects.create(
+                        sender=request.user,
+                        receiver=receiver,
+                        message=message_text
+                    )
+                    return redirect(f"{request.path}?with={receiver_id}")
+            except User.DoesNotExist:
+                messages.error(request, 'User not found')
+    
+    context = {
+        'chat_partner': chat_partner,
+        'chat_partners': chat_partners,  # For admin to select employer
+        'messages': messages_list,
+        'current_user_id': chat_partner.id if chat_partner else None,
+    }
+    
+    if request.user.role == 'employer':
+        return render(request, 'accounts/chat_employer_admin.html', context)
+    else:
+        return render(request, 'admin_panel/chat_admin_employer.html', context)
 
 
 @login_required

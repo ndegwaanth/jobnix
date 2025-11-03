@@ -29,6 +29,9 @@ urlpatterns = [
     path('messages/', views.messages_view, name='messages'),
     path('analytics/', views.profile_analytics_view, name='profile_analytics'),
     
+    # Chat
+    path('chat/employer-admin/', views.employer_admin_chat_view, name='employer_admin_chat'),
+    
     # Employer Dashboard Features
     path('company-profile/', views.company_profile_edit_view, name='company_profile'),
     path('job/post/', views.job_post_create_view, name='job_post_create'),

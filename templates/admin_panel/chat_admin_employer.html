@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Employers - JobNix Admin</title>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+    <script src="{% static 'js/theme-switcher.js' %}"></script>
+    <style>
+        .whatsapp-chat-container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 0;
+            height: calc(100vh - 140px);
+            background: #e5ddd5;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .whatsapp-chat-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px),
+                repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .chat-contacts-list {
+            background: #fff;
+            border-right: 1px solid #e4e4e4;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .chat-contacts-header {
+            background: #ededed;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #e4e4e4;
+        }
+        
+        .chat-contacts-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #262626;
+        }
+        
+        .chat-search-box {
+            padding: 0.5rem 1rem;
+            background: #f6f6f6;
+            border-bottom: 1px solid #e4e4e4;
+        }
+        
+        .chat-search-box input {
+            width: 100%;
+            padding: 0.625rem 2.5rem 0.625rem 2.5rem;
+            border: none;
+            border-radius: 1.25rem;
+            background: white;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        
+        .chat-search-box .search-icon {
+            position: absolute;
+            left: 1.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        .contacts-list {
+            flex: 1;
+            overflow-y: auto;
+            background: white;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .contact-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .contact-item.active {
+            background: #e9ebeb;
+        }
+        
+        .contact-avatar {
+            width: 49px;
+            height: 49px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-right: 0.875rem;
+            flex-shrink: 0;
+        }
+        
+        .contact-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .contact-name {
+            font-weight: 500;
+            color: #262626;
+            font-size: 1rem;
+            margin: 0 0 0.25rem 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .contact-preview {
+            font-size: 0.875rem;
+            color: #667781;
+            margin: 0;
+        }
+        
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            background: #e5ddd5;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .chat-header {
+            background: #075e54;
+            color: white;
+            padding: 0.875rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+        }
+        
+        .chat-header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .chat-header-info h4 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .chat-header-info p {
+            margin: 0;
+            font-size: 0.8125rem;
+            opacity: 0.9;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px),
+                repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px);
+        }
+        
+        .message-bubble {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+        
+        .message-bubble.sent {
+            justify-content: flex-end;
+        }
+        
+        .message-bubble-content {
+            max-width: 65%;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            position: relative;
+            word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        }
+        
+        .message-bubble.received .message-bubble-content {
+            background: white;
+            border-top-left-radius: 0.125rem;
+            color: #262626;
+        }
+        
+        .message-bubble.sent .message-bubble-content {
+            background: #dcf8c6;
+            border-top-right-radius: 0.125rem;
+            color: #262626;
+        }
+        
+        .message-text {
+            margin: 0;
+            font-size: 0.9375rem;
+            line-height: 1.4;
+        }
+        
+        .message-time {
+            font-size: 0.6875rem;
+            color: #667781;
+            margin-top: 0.25rem;
+            text-align: right;
+        }
+        
+        .message-tick {
+            font-size: 0.75rem;
+            color: #667781;
+            margin-left: 0.25rem;
+        }
+        
+        .message-bubble.sent .message-tick {
+            color: #4fc3f7;
+        }
+        
+        .chat-input-area {
+            background: #f0f0f0;
+            padding: 0.625rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-top: 1px solid #e4e4e4;
+        }
+        
+        .chat-input-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 1.25rem;
+            padding: 0.5rem 1rem;
+        }
+        
+        .chat-input-wrapper input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 0.9375rem;
+            padding: 0.25rem 0;
+        }
+        
+        .chat-input-wrapper .attach-icon {
+            color: #54656f;
+            margin-right: 0.5rem;
+            cursor: pointer;
+        }
+        
+        .chat-send-btn {
+            background: #075e54;
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .chat-send-btn:hover {
+            background: #064e47;
+        }
+        
+        .empty-chat-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #667781;
+        }
+        
+        .empty-chat-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+        
+        .dark-theme .chat-contacts-list {
+            background: #2b2b2b;
+            border-right-color: #404040;
+        }
+        
+        .dark-theme .chat-contacts-header {
+            background: #1e1e1e;
+            border-bottom-color: #404040;
+        }
+        
+        .dark-theme .chat-contacts-header h3 {
+            color: #e4e4e4;
+        }
+        
+        .dark-theme .chat-search-box {
+            background: #1e1e1e;
+            border-bottom-color: #404040;
+        }
+        
+        .dark-theme .chat-search-box input {
+            background: #2b2b2b;
+            color: #e4e4e4;
+        }
+        
+        .dark-theme .contacts-list {
+            background: #2b2b2b;
+        }
+        
+        .dark-theme .contact-item {
+            border-bottom-color: #404040;
+        }
+        
+        .dark-theme .contact-item:hover {
+            background: #333;
+        }
+        
+        .dark-theme .contact-item.active {
+            background: #3a3a3a;
+        }
+        
+        .dark-theme .contact-name {
+            color: #e4e4e4;
+        }
+        
+        .dark-theme .chat-input-area {
+            background: #1e1e1e;
+            border-top-color: #404040;
+        }
+        
+        .dark-theme .chat-input-wrapper {
+            background: #2b2b2b;
+        }
+        
+        .dark-theme .chat-input-wrapper input {
+            color: #e4e4e4;
+        }
+    </style>
+</head>
+<body class="dashboard-admin" data-user-theme="{{ user.theme_preference|default:'light' }}">
+    <!-- Sidebar -->
+    <aside class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <img src="{% static 'icons/logo.png' %}" alt="JobNix Logo" style="width: 32px; height: 32px; margin-right: 8px; object-fit: contain;">
+                <span>Job<span class="accent">Nix</span> Admin</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin_panel:admin_employer_chat' %}" class="nav-item active">
+                <i class="fas fa-comments"></i>
+                <span>Chat with Employers</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Chat with Employers</h1>
+                <p>Communicate with employers directly</p>
+            </div>
+        </header>
+
+        <div class="whatsapp-chat-container">
+            <!-- Contacts List -->
+            <div class="chat-contacts-list">
+                <div class="chat-contacts-header">
+                    <h3>Employers</h3>
+                </div>
+                <div class="chat-search-box" style="position: relative;">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchContacts" placeholder="Search employers" onkeyup="filterContacts()">
+                </div>
+                <div class="contacts-list" id="contactsList">
+                    {% if chat_partners %}
+                        {% for partner in chat_partners %}
+                        <a href="?with={{ partner.id }}" class="contact-item {% if current_user_id == partner.id %}active{% endif %}">
+                            <div class="contact-avatar">
+                                {% if partner.employer_profile and partner.employer_profile.company_name %}
+                                    {{ partner.employer_profile.company_name|first|upper }}
+                                {% else %}
+                                    {{ partner.first_name|first|default:partner.username|first|upper }}
+                                {% endif %}
+                            </div>
+                            <div class="contact-info">
+                                <div class="contact-name">
+                                    {% if partner.employer_profile and partner.employer_profile.company_name %}
+                                        {{ partner.employer_profile.company_name }}
+                                    {% else %}
+                                        {{ partner.get_full_name|default:partner.username }}
+                                    {% endif %}
+                                </div>
+                                <div class="contact-preview">Tap to view messages</div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                            <i class="fas fa-comments" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;"></i>
+                            <p>No employers found</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="chat-area">
+                {% if chat_partner %}
+                <div class="chat-header">
+                    <div class="chat-header-left">
+                        <div class="chat-header-avatar">
+                            {% if chat_partner.employer_profile and chat_partner.employer_profile.company_name %}
+                                {{ chat_partner.employer_profile.company_name|first|upper }}
+                            {% else %}
+                                {{ chat_partner.first_name|first|default:chat_partner.username|first|upper }}
+                            {% endif %}
+                        </div>
+                        <div class="chat-header-info">
+                            <h4>
+                                {% if chat_partner.employer_profile and chat_partner.employer_profile.company_name %}
+                                    {{ chat_partner.employer_profile.company_name }}
+                                {% else %}
+                                    {{ chat_partner.get_full_name|default:chat_partner.username }}
+                                {% endif %}
+                            </h4>
+                            <p>Online</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    {% for message in messages %}
+                    <div class="message-bubble {% if message.sender == user %}sent{% else %}received{% endif %}">
+                        <div class="message-bubble-content">
+                            <p class="message-text">{{ message.message }}</p>
+                            <div class="message-time">
+                                {{ message.created_at|date:"H:i" }}
+                                {% if message.sender == user %}
+                                <span class="message-tick"><i class="fas fa-check-double"></i></span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <form method="POST" class="chat-input-area" id="chatForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="receiver_id" value="{{ chat_partner.id }}">
+                    <div class="chat-input-wrapper">
+                        <i class="fas fa-paperclip attach-icon"></i>
+                        <input type="text" name="message" id="messageInput" placeholder="Type a message" required autocomplete="off">
+                    </div>
+                    <button type="submit" class="chat-send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+                {% else %}
+                <div class="empty-chat-state">
+                    <i class="fas fa-comments"></i>
+                    <h3>Select an employer to start chatting</h3>
+                    <p>Choose an employer from the list to begin conversation</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('chatMessages');
+            if (messagesContainer) {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+        
+        // Auto-refresh messages every 3 seconds
+        let refreshInterval;
+        {% if chat_partner %}
+        refreshInterval = setInterval(function() {
+            fetch(window.location.href + '?refresh=' + Date.now(), {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            }).catch(err => console.log('Auto-refresh error:', err));
+        }, 3000);
+        {% endif %}
+        
+        function filterContacts() {
+            const searchInput = document.getElementById('searchContacts');
+            const filter = searchInput.value.toLowerCase();
+            const contacts = document.querySelectorAll('.contact-item');
+            
+            contacts.forEach(contact => {
+                const name = contact.querySelector('.contact-name').textContent.toLowerCase();
+                if (name.includes(filter)) {
+                    contact.style.display = 'flex';
+                } else {
+                    contact.style.display = 'none';
+                }
+            });
+        }
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            scrollToBottom();
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.focus();
+            }
+        });
+    </script>
+</body>
+</html>
+

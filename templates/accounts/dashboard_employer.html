@@ -17,7 +17,7 @@
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="logo">
-                <i class="fas fa-briefcase"></i>
+                <img src="{% static 'icons/logo.png' %}" alt="JobNix Logo" style="width: 32px; height: 32px; margin-right: 8px; object-fit: contain;">
                 <span>Job<span class="accent">Nix</span></span>
             </div>
         </div>
@@ -50,9 +50,9 @@
                 <i class="fas fa-bell"></i>
                 <span>Notifications</span>
             </a>
-            <a href="{% url 'accounts:messages' %}" class="nav-item">
-                <i class="fas fa-envelope"></i>
-                <span>Messages</span>
+            <a href="{% url 'accounts:employer_admin_chat' %}" class="nav-item">
+                <i class="fas fa-comments"></i>
+                <span>Chat with Admin</span>
             </a>
             <a href="{% url 'accounts:company_profile' %}" class="nav-item">
                 <i class="fas fa-building"></i>
@@ -205,7 +205,7 @@
                         <i class="fas fa-building"></i>
                         <span>Company Settings</span>
                     </a>
-                    <a href="{% url 'accounts:messages' %}" class="action-btn">
+                    <a href="{% url 'accounts:employer_admin_chat' %}" class="action-btn">
                         <i class="fas fa-comments"></i>
                         <span>Messages</span>
                     </a>

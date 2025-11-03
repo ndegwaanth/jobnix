@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from accounts import views as accounts_views
 
 app_name = 'admin_panel'
 
@@ -27,4 +28,7 @@ urlpatterns = [
     path('analytics/', views.analytics_view, name='analytics'),
     path('support-tickets/', views.support_tickets_view, name='support_tickets'),
     path('notifications/', views.system_notifications_view, name='system_notifications'),
+    
+    # Chat
+    path('chat/employer/', accounts_views.employer_admin_chat_view, name='admin_employer_chat'),
 ]
