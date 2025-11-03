@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/django.py", "use": "@vercel/python" }
+  ],
+  "routes": [
+    { "src": "/static/(.*)", "dest": "/static/$1" },
+    { "src": "/media/(.*)", "dest": "/media/$1" },
+    { "src": "/(.*)", "dest": "/api/django.py" }
+  ],
+  "env": {
+    "DJANGO_SETTINGS_MODULE": "jobnix.settings",
+    "PYTHONUNBUFFERED": "1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "functions": {
+    "api/django.py": {
+      "runtime": "python3.11",
+      "maxDuration": 10,
+      "memory": 1024
+    }
+  }
+}
+
