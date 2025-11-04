@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'admin_panel',
     'analytics',
     'education',
+    'mentors',
 ]
 
 # Custom User Model

@@ -31,6 +31,7 @@ urlpatterns = [
     
     # Chat
     path('chat/employer-admin/', views.employer_admin_chat_view, name='employer_admin_chat'),
+    path('chat/employer-user/', views.employer_user_chat_view, name='employer_user_chat'),
     
     # Employer Dashboard Features
     path('company-profile/', views.company_profile_edit_view, name='company_profile'),

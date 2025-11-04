@@ -80,11 +80,21 @@
                                 <p>{{ notification.message }}</p>
                                 <span class="notification-time">{{ notification.created_at|timesince }} ago</span>
                             </div>
-                            {% if notification.link %}
-                            <a href="{{ notification.link }}" class="notification-link">
-                                <i class="fas fa-arrow-right"></i>
-                            </a>
-                            {% endif %}
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                {% if notification.link %}
+                                <a href="{{ notification.link }}" class="notification-link">
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                                {% endif %}
+                                <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this notification?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="delete_notification" value="1">
+                                    <input type="hidden" name="notification_id" value="{{ notification.id }}">
+                                    <button type="submit" class="btn-icon" style="background: transparent; border: none; color: var(--error); cursor: pointer; padding: 0.5rem;" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                         {% endfor %}
                     {% else %}

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat with Admin - JobNix</title>
+    <title>Chat with Users - JobNix</title>
     {% load static %}
     <link rel="icon" type="image/png" href="{% static 'icons/logo.png' %}">
     <link rel="shortcut icon" type="image/png" href="{% static 'icons/logo.png' %}">
@@ -13,28 +13,114 @@
     <script src="{% static 'js/theme-switcher.js' %}"></script>
     <style>
         .whatsapp-chat-container {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 0;
             height: calc(100vh - 140px);
             background: #e5ddd5;
             border-radius: 0.5rem;
             overflow: hidden;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .chat-contacts-list {
+            background: #fff;
+            border-right: 1px solid #e4e4e4;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-contacts-header {
+            background: #ededed;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #e4e4e4;
+        }
+        
+        .chat-contacts-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #262626;
+        }
+        
+        .chat-search-box {
+            padding: 0.5rem 1rem;
+            background: #f6f6f6;
+            border-bottom: 1px solid #e4e4e4;
             position: relative;
         }
         
-        .whatsapp-chat-container::before {
-            content: '';
+        .chat-search-box input {
+            width: 100%;
+            padding: 0.625rem 2.5rem;
+            border: none;
+            border-radius: 1.25rem;
+            background: white;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        
+        .chat-search-box .search-icon {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px),
-                repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px);
-            pointer-events: none;
-            z-index: 0;
+            left: 1.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+        
+        .contacts-list {
+            flex: 1;
+            overflow-y: auto;
+            background: white;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .contact-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .contact-item.active {
+            background: #e9ebeb;
+        }
+        
+        .contact-avatar {
+            width: 49px;
+            height: 49px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-right: 0.875rem;
+        }
+        
+        .contact-info {
+            flex: 1;
+        }
+        
+        .contact-name {
+            font-weight: 500;
+            color: #262626;
+            font-size: 1rem;
+            margin: 0 0 0.25rem 0;
+        }
+        
+        .contact-preview {
+            font-size: 0.875rem;
+            color: #667781;
         }
         
         .chat-area {
@@ -42,8 +128,6 @@
             flex-direction: column;
             background: #e5ddd5;
             position: relative;
-            z-index: 1;
-            height: 100%;
         }
         
         .chat-header {
@@ -52,14 +136,7 @@
             padding: 0.875rem 1.25rem;
             display: flex;
             align-items: center;
-            justify-content: space-between;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        
-        .chat-header-left {
-            display: flex;
-            align-items: center;
-            gap: 0.875rem;
         }
         
         .chat-header-avatar {
@@ -70,7 +147,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
+            margin-right: 0.875rem;
         }
         
         .chat-header-info h4 {
@@ -109,7 +186,6 @@
             max-width: 65%;
             padding: 0.5rem 0.75rem;
             border-radius: 0.5rem;
-            position: relative;
             word-wrap: break-word;
             box-shadow: 0 1px 2px rgba(0,0,0,0.15);
         }
@@ -141,12 +217,8 @@
         
         .message-tick {
             font-size: 0.75rem;
-            color: #667781;
-            margin-left: 0.25rem;
-        }
-        
-        .message-bubble.sent .message-tick {
             color: #4fc3f7;
+            margin-left: 0.25rem;
         }
         
         .chat-input-area {
@@ -172,7 +244,6 @@
             border: none;
             outline: none;
             font-size: 0.9375rem;
-            padding: 0.25rem 0;
         }
         
         .chat-input-wrapper .attach-icon {
@@ -193,7 +264,6 @@
             justify-content: center;
             cursor: pointer;
             transition: background 0.2s;
-            flex-shrink: 0;
         }
         
         .chat-send-btn:hover {
@@ -215,6 +285,13 @@
             opacity: 0.3;
         }
         
+        .dark-theme .chat-contacts-list,
+        .dark-theme .chat-contacts-header,
+        .dark-theme .contacts-list {
+            background: #2b2b2b;
+            border-color: #404040;
+        }
+        
         .dark-theme .chat-input-area {
             background: #1e1e1e;
             border-top-color: #404040;
@@ -230,6 +307,9 @@
     </style>
 </head>
 <body class="dashboard-employer" data-user-theme="{{ user.theme_preference|default:'light' }}">
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -243,9 +323,9 @@
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="{% url 'accounts:employer_admin_chat' %}" class="nav-item active">
+            <a href="{% url 'accounts:employer_user_chat' %}" class="nav-item active">
                 <i class="fas fa-comments"></i>
-                <span>Chat with Admin</span>
+                <span>Chat with Users</span>
             </a>
         </nav>
         <div class="sidebar-footer">
@@ -260,21 +340,53 @@
     <main class="main-content">
         <header class="topbar">
             <div class="topbar-left">
-                <h1>Chat with Admin</h1>
-                <p>Get support and communicate directly with administrators</p>
+                <h1>Chat with Users</h1>
+                <p>Communicate with job applicants</p>
             </div>
         </header>
 
         <div class="whatsapp-chat-container">
+            <!-- Contacts List -->
+            <div class="chat-contacts-list">
+                <div class="chat-contacts-header">
+                    <h3>Job Applicants</h3>
+                </div>
+                <div class="chat-search-box" style="position: relative;">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchContacts" placeholder="Search users" onkeyup="filterContacts()">
+                </div>
+                <div class="contacts-list" id="contactsList">
+                    {% if chat_partners %}
+                        {% for partner in chat_partners %}
+                        <a href="?with={{ partner.id }}" class="contact-item {% if current_user_id == partner.id %}active{% endif %}">
+                            <div class="contact-avatar">
+                                {{ partner.first_name|first|default:partner.username|first|upper }}
+                            </div>
+                            <div class="contact-info">
+                                <div class="contact-name">{{ partner.get_full_name|default:partner.username }}</div>
+                                <div class="contact-preview">Tap to view messages</div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                            <i class="fas fa-user" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;"></i>
+                            <p>No applicants yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Chat Area -->
             <div class="chat-area">
                 {% if chat_partner %}
                 <div class="chat-header">
                     <div class="chat-header-left">
                         <div class="chat-header-avatar">
-                            <i class="fas fa-user-shield"></i>
+                            {{ chat_partner.first_name|first|default:chat_partner.username|first|upper }}
                         </div>
                         <div class="chat-header-info">
-                            <h4>Administrator</h4>
+                            <h4>{{ chat_partner.get_full_name|default:chat_partner.username }}</h4>
                             <p>Online</p>
                         </div>
                     </div>
@@ -308,15 +420,20 @@
                 {% else %}
                 <div class="empty-chat-state">
                     <i class="fas fa-comments"></i>
-                    <h3>No admin available</h3>
-                    <p>Please contact support if you need assistance</p>
+                    <h3>Select a user to start chatting</h3>
+                    <p>Choose an applicant from the list to begin conversation</p>
                 </div>
                 {% endif %}
             </div>
         </div>
     </main>
 
+    <script src="{% static 'js/theme-switcher.js' %}"></script>
     <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+        }
+        
         function scrollToBottom() {
             const messagesContainer = document.getElementById('chatMessages');
             if (messagesContainer) {
@@ -329,71 +446,35 @@
         let savedMessage = '';
         
         if (messageInput) {
-            // Save message on input
             messageInput.addEventListener('input', function() {
                 savedMessage = this.value;
-                localStorage.setItem('chat_message_' + '{{ chat_partner.id }}', savedMessage);
+                localStorage.setItem('chat_message_' + '{{ chat_partner.id|default:0 }}', savedMessage);
             });
             
-            // Restore message on load
-            let stored = localStorage.getItem('chat_message_' + '{{ chat_partner.id }}');
+            let stored = localStorage.getItem('chat_message_' + '{{ chat_partner.id|default:0 }}');
             if (stored) {
                 messageInput.value = stored;
                 savedMessage = stored;
             }
             
-            // Clear saved message after successful send
             document.getElementById('chatForm')?.addEventListener('submit', function() {
-                localStorage.removeItem('chat_message_' + '{{ chat_partner.id }}');
+                localStorage.removeItem('chat_message_' + '{{ chat_partner.id|default:0 }}');
             });
         }
         
-        // Auto-refresh messages every 3 seconds (without reload if input has value)
+        // Auto-refresh messages every 3 seconds
         let refreshInterval;
-        let isTyping = false;
-        let lastTypingTime = Date.now();
-        
-        if (messageInput) {
-            messageInput.addEventListener('input', function() {
-                isTyping = true;
-                lastTypingTime = Date.now();
-                savedMessage = this.value;
-                localStorage.setItem('chat_message_' + '{{ chat_partner.id|default:0 }}', savedMessage);
-                
-                // Reset typing flag after 2 seconds of no typing
-                clearTimeout(window.typingTimeout);
-                window.typingTimeout = setTimeout(function() {
-                    isTyping = false;
-                }, 2000);
-            });
-        }
-        
         {% if chat_partner %}
         refreshInterval = setInterval(function() {
-            // Don't refresh if user is actively typing
-            if (isTyping || (messageInput && messageInput.value.trim() !== savedMessage.trim())) {
+            if (messageInput && messageInput.value.trim() !== savedMessage.trim()) {
                 return;
             }
-            
-            // Don't refresh if user typed within last 3 seconds
-            if (Date.now() - lastTypingTime < 3000) {
-                return;
-            }
-            
             fetch(window.location.href + '?refresh=' + Date.now(), {
                 method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
             }).then(response => {
-                if (response.ok) {
-                    // Only reload if input is empty or matches saved value and not typing
-                    if (!messageInput || !messageInput.value.trim() || (messageInput.value === savedMessage && !isTyping)) {
-                        // Double check before reload
-                        if (!isTyping && Date.now() - lastTypingTime > 3000) {
-                            location.reload();
-                        }
-                    }
+                if (response.ok && (!messageInput || !messageInput.value.trim() || messageInput.value === savedMessage)) {
+                    location.reload();
                 }
             }).catch(err => console.log('Auto-refresh error:', err));
         }, 3000);
@@ -401,11 +482,18 @@
         
         window.addEventListener('DOMContentLoaded', function() {
             scrollToBottom();
-            const messageInput = document.getElementById('messageInput');
-            if (messageInput) {
-                messageInput.focus();
-            }
+            if (messageInput) messageInput.focus();
         });
+        
+        function filterContacts() {
+            const searchInput = document.getElementById('searchContacts');
+            const filter = searchInput.value.toLowerCase();
+            const contacts = document.querySelectorAll('.contact-item');
+            contacts.forEach(contact => {
+                const name = contact.querySelector('.contact-name').textContent.toLowerCase();
+                contact.style.display = name.includes(filter) ? 'flex' : 'none';
+            });
+        }
     </script>
 </body>
 </html>

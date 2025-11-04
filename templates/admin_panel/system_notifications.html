@@ -96,21 +96,95 @@
                 </form>
             </div>
 
-            <!-- Preview -->
-            <div class="dashboard-card admin-card">
+            <!-- Preview & All Notifications -->
+            <div class="dashboard-card admin-card large">
                 <div class="card-header">
-                    <h2><i class="fas fa-eye"></i> Preview</h2>
+                    <h2><i class="fas fa-eye"></i> Preview & All Notifications</h2>
                 </div>
-                <div class="notification-preview">
-                    <div class="notification-item">
-                        <div class="notification-icon">
-                            <i class="fas fa-bullhorn"></i>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                    <!-- Live Preview -->
+                    <div>
+                        <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-secondary);">Live Preview</h3>
+                        <div class="notification-preview">
+                            <div class="notification-item">
+                                <div class="notification-icon">
+                                    <i class="fas fa-bullhorn"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <h4 id="preview-title">Notification Title</h4>
+                                    <p id="preview-message">Notification message will appear here...</p>
+                                    <span class="notification-time">Just now</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="notification-content">
-                            <h4 id="preview-title">Notification Title</h4>
-                            <p id="preview-message">Notification message will appear here...</p>
-                            <span class="notification-time">Just now</span>
+                    </div>
+                    
+                    <!-- Recent System Notifications -->
+                    <div>
+                        <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-secondary);">Recent System Notifications</h3>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            {% if all_notifications %}
+                                {% for notification in all_notifications|slice:":10" %}
+                                <div class="notification-item" style="margin-bottom: 0.75rem; padding: 0.75rem; background: var(--bg-secondary); border-radius: var(--radius);">
+                                    <div class="notification-icon">
+                                        {% if notification.notification_type == 'job_application' %}
+                                            <i class="fas fa-file-alt"></i>
+                                        {% elif notification.notification_type == 'job_match' %}
+                                            <i class="fas fa-sparkles"></i>
+                                        {% elif notification.notification_type == 'course_enrollment' %}
+                                            <i class="fas fa-graduation-cap"></i>
+                                        {% elif notification.notification_type == 'message' %}
+                                            <i class="fas fa-envelope"></i>
+                                        {% else %}
+                                            <i class="fas fa-info-circle"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="notification-content">
+                                        <h4 style="font-size: 0.9375rem; margin: 0 0 0.25rem 0;">{{ notification.title }}</h4>
+                                        <p style="font-size: 0.875rem; margin: 0 0 0.25rem 0; color: var(--text-secondary);">{{ notification.message|truncatewords:15 }}</p>
+                                        <span class="notification-time" style="font-size: 0.75rem;">{{ notification.created_at|timesince }} ago</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p style="text-align: center; color: var(--text-secondary); padding: 2rem;">No notifications yet</p>
+                            {% endif %}
                         </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Employer Messages -->
+                <div style="padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                    <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-secondary);">Recent Messages from Employers</h3>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        {% if recent_messages %}
+                            {% for msg in recent_messages|slice:":10" %}
+                            <div class="notification-item" style="margin-bottom: 0.75rem; padding: 0.75rem; background: var(--bg-secondary); border-radius: var(--radius);">
+                                <div class="notification-icon" style="background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <h4 style="font-size: 0.9375rem; margin: 0 0 0.25rem 0;">
+                                        {% if msg.sender.employer_profile %}
+                                            {{ msg.sender.employer_profile.company_name }}
+                                        {% else %}
+                                            {{ msg.sender.get_full_name|default:msg.sender.username }}
+                                        {% endif %}
+                                        → 
+                                        {% if msg.receiver.role == 'admin' %}
+                                            Admin
+                                        {% else %}
+                                            {{ msg.receiver.get_full_name|default:msg.receiver.username }}
+                                        {% endif %}
+                                    </h4>
+                                    <p style="font-size: 0.875rem; margin: 0 0 0.25rem 0; color: var(--text-secondary);">{{ msg.message|truncatewords:20 }}</p>
+                                    <span class="notification-time" style="font-size: 0.75rem;">{{ msg.created_at|timesince }} ago</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p style="text-align: center; color: var(--text-secondary); padding: 2rem;">No messages from employers yet</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Mentorships - Mentor Dashboard - JobNix</title>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <script src="{% static 'js/theme-switcher.js' %}"></script>
+</head>
+<body class="dashboard-employer" data-user-theme="{{ user.theme_preference|default:'light' }}">
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <img src="{% static 'icons/logo.png' %}" alt="JobNix Logo" style="width: 32px; height: 32px; margin-right: 8px; object-fit: contain;">
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'mentors:my_mentorships' %}" class="nav-item active">
+                <i class="fas fa-user-tie"></i>
+                <span>Mentorship</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Mentorship Dashboard</h1>
+                <p>Manage your mentorship relationships</p>
+            </div>
+            {% if mentor_profile.status == 'pending' %}
+            <div class="topbar-right">
+                <span class="badge" style="background: var(--warning); color: white; padding: 0.5rem 1rem;">
+                    <i class="fas fa-clock"></i> Pending Approval
+                </span>
+            </div>
+            {% endif %}
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Mentor Stats -->
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ active_mentorships.count }}</h3>
+                    <p>Active Mentees</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ pending_requests.count }}</h3>
+                    <p>Pending Requests</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ mentor_profile.rating|floatformat:1 }}</h3>
+                    <p>Average Rating</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);">
+                    <i class="fas fa-video"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ mentor_profile.total_sessions }}</h3>
+                    <p>Total Sessions</p>
+                </div>
+            </div>
+
+            <!-- Pending Requests -->
+            {% if pending_requests %}
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-clock"></i> Pending Requests</h2>
+                </div>
+                <div class="dashboard-grid" style="grid-template-columns: 1fr; gap: 1rem;">
+                    {% for mentorship in pending_requests %}
+                    <div class="application-item">
+                        <div class="application-header">
+                            <div class="applicant-avatar">
+                                {{ mentorship.mentee.first_name|first|default:mentorship.mentee.username|first|upper }}
+                            </div>
+                            <div style="flex: 1;">
+                                <h3>{{ mentorship.mentee.get_full_name|default:mentorship.mentee.username }}</h3>
+                                <p style="color: var(--text-secondary); margin: 0.5rem 0;">
+                                    <strong>Message:</strong> {{ mentorship.message|truncatewords:20 }}
+                                </p>
+                                <p style="color: var(--text-secondary); margin: 0.5rem 0;">
+                                    <strong>Goals:</strong> {{ mentorship.goals|truncatewords:20 }}
+                                </p>
+                                <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0.5rem 0;">
+                                    Match Score: {{ mentorship.match_score }}% | Requested {{ mentorship.created_at|timesince }} ago
+                                </p>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <form method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="request_id" value="{{ mentorship.id }}">
+                                <input type="hidden" name="action" value="accept">
+                                <button type="submit" class="btn-primary" style="width: 100%;">
+                                    <i class="fas fa-check"></i> Accept
+                                </button>
+                            </form>
+                            <form method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="request_id" value="{{ mentorship.id }}">
+                                <input type="hidden" name="action" value="reject">
+                                <button type="submit" class="btn-secondary" style="width: 100%;">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Active Mentorships -->
+            {% if active_mentorships %}
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-check-circle"></i> Active Mentorships</h2>
+                </div>
+                <div class="dashboard-grid" style="grid-template-columns: 1fr; gap: 1rem;">
+                    {% for mentorship in active_mentorships %}
+                    <div class="application-item" onclick="window.location.href='{% url 'mentors:mentorship_detail_mentor' mentorship.id %}'">
+                        <div class="application-header">
+                            <div class="applicant-avatar">
+                                {{ mentorship.mentee.first_name|first|default:mentorship.mentee.username|first|upper }}
+                            </div>
+                            <div>
+                                <h3>{{ mentorship.mentee.get_full_name|default:mentorship.mentee.username }}</h3>
+                                <p style="color: var(--text-secondary); margin: 0.25rem 0;">
+                                    Match Score: {{ mentorship.match_score }}%
+                                </p>
+                                <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0.25rem 0;">
+                                    Started {{ mentorship.responded_at|timesince }} ago
+                                </p>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+                            <span class="badge" style="background: var(--success); color: white; padding: 0.5rem 1rem;">
+                                <i class="fas fa-check"></i> Active
+                            </span>
+                            <a href="{% url 'mentors:mentorship_detail_mentor' mentorship.id %}" class="btn-secondary" style="padding: 0.5rem 1rem;">
+                                <i class="fas fa-eye"></i> Manage
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- All Requests -->
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-list"></i> All Mentorship Requests</h2>
+                </div>
+                {% if mentorship_requests %}
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mentee</th>
+                                <th>Status</th>
+                                <th>Match Score</th>
+                                <th>Requested</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mentorship in mentorship_requests %}
+                            <tr>
+                                <td>
+                                    <strong>{{ mentorship.mentee.get_full_name|default:mentorship.mentee.username }}</strong>
+                                </td>
+                                <td>
+                                    {% if mentorship.status == 'accepted' %}
+                                    <span class="badge" style="background: var(--success); color: white;">Accepted</span>
+                                    {% elif mentorship.status == 'pending' %}
+                                    <span class="badge" style="background: var(--warning); color: white;">Pending</span>
+                                    {% elif mentorship.status == 'rejected' %}
+                                    <span class="badge" style="background: var(--error); color: white;">Rejected</span>
+                                    {% else %}
+                                    <span class="badge" style="background: var(--text-secondary); color: white;">{{ mentorship.status|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ mentorship.match_score }}%</td>
+                                <td>{{ mentorship.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if mentorship.status == 'accepted' %}
+                                    <a href="{% url 'mentors:mentorship_detail_mentor' mentorship.id %}" class="btn-secondary" style="padding: 0.5rem 1rem;">
+                                        <i class="fas fa-eye"></i> Manage
+                                    </a>
+                                    {% elif mentorship.status == 'pending' %}
+                                    <form method="POST" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="request_id" value="{{ mentorship.id }}">
+                                        <input type="hidden" name="action" value="accept">
+                                        <button type="submit" class="btn-primary" style="padding: 0.5rem 1rem;">
+                                            <i class="fas fa-check"></i> Accept
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span style="color: var(--text-secondary);">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-user-tie"></i>
+                    <h3>No Mentorship Requests</h3>
+                    <p>You haven't received any mentorship requests yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <script src="{% static 'js/theme-switcher.js' %}"></script>
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
+

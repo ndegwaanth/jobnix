@@ -5,13 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - JobNix</title>
     {% load static %}
-    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
-    <link rel="shortcut icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <link rel="icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'icons/logo.png' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <script src="{% static 'js/theme-switcher.js' %}"></script>
 </head>
 <body class="dashboard-youth" data-user-theme="{{ user.theme_preference|default:'light' }}">
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -56,6 +60,10 @@
             <a href="{% url 'accounts:messages' %}" class="nav-item">
                 <i class="fas fa-envelope"></i>
                 <span>Messages</span>
+            </a>
+            <a href="{% url 'mentors:mentorship_list' %}" class="nav-item">
+                <i class="fas fa-user-tie"></i>
+                <span>Mentorship</span>
             </a>
             <a href="{% url 'accounts:profile_analytics' %}" class="nav-item">
                 <i class="fas fa-chart-line"></i>
@@ -231,7 +239,7 @@
                         <i class="fas fa-user-edit"></i>
                         <span>Edit Profile</span>
                     </a>
-                    <a href="#" class="action-btn">
+                    <a href="{% url 'mentors:mentorship_list' %}" class="action-btn">
                         <i class="fas fa-users"></i>
                         <span>Mentorship</span>
                     </a>
@@ -317,6 +325,22 @@
 
     <script src="{% static 'js/dashboard.js' %}"></script>
     <script src="{% static 'js/theme-switcher.js' %}"></script>
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+        }
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth <= 767) {
+                const sidebar = document.querySelector('.sidebar');
+                const toggle = document.querySelector('.mobile-menu-toggle');
+                if (sidebar && !sidebar.contains(e.target) && !toggle.contains(e.target) && sidebar.classList.contains('open')) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+    </script>
 </body>
 </html>
 

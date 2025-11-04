@@ -13,6 +13,9 @@
     <script src="{% static 'js/theme-switcher.js' %}"></script>
 </head>
 <body class="dashboard-employer" data-user-theme="{{ user.theme_preference|default:'light' }}">
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -53,6 +56,14 @@
             <a href="{% url 'accounts:employer_admin_chat' %}" class="nav-item">
                 <i class="fas fa-comments"></i>
                 <span>Chat with Admin</span>
+            </a>
+            <a href="{% url 'accounts:employer_user_chat' %}" class="nav-item">
+                <i class="fas fa-user-friends"></i>
+                <span>Chat with Users</span>
+            </a>
+            <a href="{% url 'mentors:my_mentorships' %}" class="nav-item">
+                <i class="fas fa-user-tie"></i>
+                <span>Mentorship</span>
             </a>
             <a href="{% url 'accounts:company_profile' %}" class="nav-item">
                 <i class="fas fa-building"></i>
@@ -294,6 +305,22 @@
 
     <script src="{% static 'js/dashboard.js' %}"></script>
     <script src="{% static 'js/theme-switcher.js' %}"></script>
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+        }
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth <= 767) {
+                const sidebar = document.querySelector('.sidebar');
+                const toggle = document.querySelector('.mobile-menu-toggle');
+                if (sidebar && !sidebar.contains(e.target) && toggle && !toggle.contains(e.target) && sidebar.classList.contains('open')) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+    </script>
 </body>
 </html>
 

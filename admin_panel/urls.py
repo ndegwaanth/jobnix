@@ -31,4 +31,7 @@ urlpatterns = [
     
     # Chat
     path('chat/employer/', accounts_views.employer_admin_chat_view, name='admin_employer_chat'),
+    
+    # Mentor Management
+    path('mentors/', views.mentor_management_view, name='mentor_management'),
 ]

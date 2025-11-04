@@ -1850,3 +1850,329 @@ body.dark-theme .module-nav-item.active {
     border-color: var(--primary);
 }
 
+/* ========================================
+   Responsive Design - Comprehensive
+   ======================================== */
+
+/* Large Desktop (1920px and above) */
+@media (min-width: 1920px) {
+    .main-content {
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+}
+
+/* Desktop (1024px - 1919px) - Default styles apply */
+
+/* Tablet Landscape (768px - 1023px) */
+@media (max-width: 1023px) {
+    .sidebar {
+        width: 220px;
+    }
+    
+    .main-content {
+        margin-left: 220px;
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .whatsapp-chat-container {
+        grid-template-columns: 280px 1fr;
+    }
+}
+
+/* Tablet Portrait (600px - 767px) */
+@media (max-width: 767px) {
+    .sidebar {
+        width: 70px;
+        overflow: visible;
+    }
+    
+    .sidebar-header .logo span {
+        display: none;
+    }
+    
+    .sidebar-nav .nav-item span {
+        display: none;
+    }
+    
+    .sidebar-nav .nav-item {
+        justify-content: center;
+        padding: 1rem 0.5rem;
+    }
+    
+    .main-content {
+        margin-left: 70px;
+    }
+    
+    .topbar {
+        padding: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .topbar-left h1 {
+        font-size: 1.25rem;
+    }
+    
+    .topbar-left p {
+        font-size: 0.875rem;
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .whatsapp-chat-container {
+        grid-template-columns: 1fr;
+        height: calc(100vh - 100px);
+    }
+    
+    .chat-contacts-list {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        background: white;
+    }
+    
+    .chat-contacts-list.show {
+        display: flex;
+    }
+    
+    .chat-area {
+        width: 100%;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .table-responsive table {
+        min-width: 600px;
+    }
+}
+
+/* Mobile Landscape (480px - 599px) */
+@media (max-width: 599px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 2000;
+    }
+    
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .topbar {
+        padding: 0.75rem;
+    }
+    
+    .topbar-left h1 {
+        font-size: 1.1rem;
+    }
+    
+    .topbar-right {
+        gap: 0.5rem;
+    }
+    
+    .topbar-right .user-menu span {
+        display: none;
+    }
+    
+    .dashboard-card {
+        padding: 1rem;
+    }
+    
+    .card-header h2 {
+        font-size: 1.1rem;
+    }
+    
+    .stat-card {
+        padding: 0.875rem;
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+    
+    .stat-info h3 {
+        font-size: 1.5rem;
+    }
+    
+    .btn {
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .btn-primary, .btn-secondary {
+        font-size: 0.875rem;
+    }
+    
+    .whatsapp-chat-container {
+        height: calc(100vh - 80px);
+    }
+    
+    .chat-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .chat-header-info h4 {
+        font-size: 0.9375rem;
+    }
+    
+    .message-bubble-content {
+        max-width: 80%;
+        padding: 0.5rem 0.625rem;
+    }
+    
+    .message-text {
+        font-size: 0.875rem;
+    }
+    
+    .chat-input-area {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .chat-input-wrapper {
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .chat-send-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .form-group label {
+        font-size: 0.875rem;
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        padding: 0.625rem;
+        font-size: 0.875rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+}
+
+/* Mobile Portrait (320px - 479px) */
+@media (max-width: 479px) {
+    .topbar-left h1 {
+        font-size: 1rem;
+    }
+    
+    .topbar-left p {
+        font-size: 0.8125rem;
+    }
+    
+    .stat-card {
+        padding: 0.75rem;
+    }
+    
+    .stat-info h3 {
+        font-size: 1.25rem;
+    }
+    
+    .stat-info p {
+        font-size: 0.8125rem;
+    }
+    
+    .dashboard-card {
+        padding: 0.875rem;
+    }
+    
+    .card-header h2 {
+        font-size: 1rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8125rem;
+    }
+    
+    .message-bubble-content {
+        max-width: 85%;
+        padding: 0.5rem;
+    }
+    
+    .message-text {
+        font-size: 0.8125rem;
+    }
+    
+    .chat-input-wrapper input {
+        font-size: 0.875rem;
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        padding: 0.5rem;
+        font-size: 0.8125rem;
+    }
+}
+
+/* Mobile Menu Toggle Button */
+.mobile-menu-toggle {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 2001;
+    background: var(--primary);
+    color: white;
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+}
+
+@media (max-width: 767px) {
+    .mobile-menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Dark theme responsive adjustments */
+@media (max-width: 767px) {
+    .dark-theme .chat-contacts-list {
+        background: #2b2b2b;
+    }
+    
+    .dark-theme .sidebar {
+        background: var(--bg-dark);
+    }
+}
+

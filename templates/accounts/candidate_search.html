@@ -14,6 +14,9 @@
     <script src="{% static 'js/theme-switcher.js' %}"></script>
 </head>
 <body class="dashboard-employer" data-user-theme="{{ user.theme_preference|default:'light' }}">
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">

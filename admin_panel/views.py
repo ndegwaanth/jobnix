@@ -951,7 +951,21 @@ def system_notifications_view(request):
             messages.success(request, f'Notification sent to {notifications_created} users')
             return redirect('admin_panel:system_notifications')
     
-    return render(request, 'admin_panel/system_notifications.html')
+    # Get all notifications for preview (including employer messages)
+    from accounts.models import Message
+    all_notifications = UserNotification.objects.all().order_by('-created_at')[:50]
+    
+    # Get recent messages from employers
+    recent_messages = Message.objects.filter(
+        sender__role='employer'
+    ).select_related('sender', 'receiver').order_by('-created_at')[:20]
+    
+    context = {
+        'all_notifications': all_notifications,
+        'recent_messages': recent_messages,
+    }
+    
+    return render(request, 'admin_panel/system_notifications.html', context)
 
 
 @login_required
@@ -1079,3 +1093,78 @@ def instructor_edit_view(request, instructor_id):
         'instructor': instructor,
     }
     return render(request, 'admin_panel/instructor_edit.html', context)
+
+
+@login_required
+def mentor_management_view(request):
+    """Manage mentors - approve, activate, deactivate mentors"""
+    if not (request.user.is_staff or request.user.role == 'admin'):
+        messages.error(request, 'Access denied')
+        return redirect('accounts:dashboard')
+    
+    from mentors.models import Mentor
+    
+    mentors = Mentor.objects.all().select_related('user')
+    
+    # Filter by status
+    status_filter = request.GET.get('status')
+    if status_filter:
+        mentors = mentors.filter(status=status_filter)
+    
+    # Search filter
+    search = request.GET.get('search')
+    if search:
+        mentors = mentors.filter(
+            Q(user__username__icontains=search) |
+            Q(user__email__icontains=search) |
+            Q(user__first_name__icontains=search) |
+            Q(user__last_name__icontains=search) |
+            Q(expertise_areas__icontains=search) |
+            Q(company__icontains=search) |
+            Q(industry__icontains=search)
+        )
+    
+    # Actions
+    if request.method == 'POST':
+        mentor_id = request.POST.get('mentor_id')
+        action = request.POST.get('action')
+        try:
+            mentor = Mentor.objects.get(id=mentor_id)
+            
+            if action == 'approve':
+                mentor.status = 'active'
+                mentor.is_verified = True
+                mentor.save()
+                messages.success(request, f'Mentor {mentor.user.username} approved and activated')
+            elif action == 'activate':
+                mentor.status = 'active'
+                mentor.save()
+                messages.success(request, f'Mentor {mentor.user.username} activated')
+            elif action == 'deactivate':
+                mentor.status = 'inactive'
+                mentor.save()
+                messages.success(request, f'Mentor {mentor.user.username} deactivated')
+            elif action == 'suspend':
+                mentor.status = 'suspended'
+                mentor.save()
+                messages.success(request, f'Mentor {mentor.user.username} suspended')
+            elif action == 'delete':
+                mentor.delete()
+                messages.success(request, f'Mentor {mentor.user.username} deleted')
+                return redirect('admin_panel:mentor_management')
+        except Mentor.DoesNotExist:
+            messages.error(request, 'Mentor not found')
+    
+    # Get mentorship stats for each mentor
+    from mentors.models import MentorshipRequest
+    for mentor in mentors:
+        mentor.total_requests = MentorshipRequest.objects.filter(mentor=mentor).count()
+        mentor.active_mentees = MentorshipRequest.objects.filter(mentor=mentor, status='accepted').count()
+        mentor.pending_requests = MentorshipRequest.objects.filter(mentor=mentor, status='pending').count()
+    
+    context = {
+        'mentors': mentors.order_by('-created_at'),
+        'status_filter': status_filter,
+        'search': search,
+    }
+    return render(request, 'admin_panel/mentor_management.html', context)

@@ -686,6 +686,18 @@ def notifications_view(request):
         notifications.update(is_read=True)
         messages.success(request, 'All notifications marked as read')
     
+    # Delete notification
+    if request.method == 'POST' and 'delete_notification' in request.POST:
+        notification_id = request.POST.get('notification_id')
+        if notification_id:
+            try:
+                notification = Notification.objects.get(id=notification_id, user=request.user)
+                notification.delete()
+                messages.success(request, 'Notification deleted successfully')
+                return redirect('accounts:notifications')
+            except Notification.DoesNotExist:
+                messages.error(request, 'Notification not found')
+    
     context = {
         'notifications': notifications,
         'unread_count': notifications.filter(is_read=False).count(),
@@ -844,6 +856,101 @@ def employer_admin_chat_view(request):
 
 
 @login_required
+def employer_user_chat_view(request):
+    """Chat between Employer and Users/Youth"""
+    from .models import Message
+    from django.db.models import Q
+    
+    # Check if user is employer or youth
+    if request.user.role not in ['employer', 'youth']:
+        messages.error(request, 'Access denied.')
+        return redirect('accounts:dashboard')
+    
+    # Determine chat partner
+    if request.user.role == 'employer':
+        # Employer can chat with youth (users who applied to their jobs)
+        from jobs.models import Application
+        applied_users = User.objects.filter(
+            applications__job__company=request.user,
+            role='youth'
+        ).distinct().order_by('first_name', 'username')
+        chat_partners = applied_users
+        default_partner = None
+    else:
+        # Youth can chat with employers (from their job applications)
+        from jobs.models import Application
+        employer_users = User.objects.filter(
+            employer_profile__isnull=False,
+            posted_jobs__applications__applicant=request.user,
+            role='employer'
+        ).distinct().order_by('first_name', 'username')
+        chat_partners = employer_users
+        default_partner = None
+    
+    # Get selected partner
+    partner_id = request.GET.get('with')
+    chat_partner = None
+    if partner_id:
+        try:
+            chat_partner = User.objects.get(id=partner_id)
+            # Validate partner based on role
+            if request.user.role == 'employer' and chat_partner.role != 'youth':
+                chat_partner = None
+                messages.error(request, 'Invalid user')
+            elif request.user.role == 'youth' and chat_partner.role != 'employer':
+                chat_partner = None
+                messages.error(request, 'Invalid employer')
+        except User.DoesNotExist:
+            chat_partner = None
+            messages.error(request, 'User not found')
+    
+    # Get messages with selected partner
+    messages_list = []
+    if chat_partner:
+        messages_list = Message.objects.filter(
+            (Q(sender=request.user, receiver=chat_partner) |
+             Q(sender=chat_partner, receiver=request.user))
+        ).order_by('created_at')
+        
+        # Mark as read
+        Message.objects.filter(sender=chat_partner, receiver=request.user, is_read=False).update(is_read=True)
+    
+    # Send message
+    if request.method == 'POST':
+        receiver_id = request.POST.get('receiver_id')
+        message_text = request.POST.get('message', '').strip()
+        if receiver_id and message_text:
+            try:
+                receiver = User.objects.get(id=receiver_id)
+                # Validate receiver based on user role
+                if request.user.role == 'employer' and receiver.role != 'youth':
+                    messages.error(request, 'Invalid receiver')
+                elif request.user.role == 'youth' and receiver.role != 'employer':
+                    messages.error(request, 'Invalid receiver')
+                else:
+                    Message.objects.create(
+                        sender=request.user,
+                        receiver=receiver,
+                        message=message_text
+                    )
+                    return redirect(f"{request.path}?with={receiver_id}")
+            except User.DoesNotExist:
+                messages.error(request, 'User not found')
+    
+    context = {
+        'chat_partner': chat_partner,
+        'chat_partners': chat_partners,
+        'messages': messages_list,
+        'current_user_id': chat_partner.id if chat_partner else None,
+    }
+    
+    if request.user.role == 'employer':
+        return render(request, 'accounts/chat_employer_user.html', context)
+    else:
+        return render(request, 'accounts/chat_user_employer.html', context)
+
+
+@login_required
 def profile_analytics_view(request):
     """View profile analytics and statistics"""
     if request.user.role != 'youth':
@@ -922,7 +1029,7 @@ def company_profile_edit_view(request):
         
         profile.save()
         messages.success(request, 'Company profile updated successfully!')
-        return redirect('accounts:company_profile_edit')
+        return redirect('accounts:company_profile')
     
     context = {'user': user, 'profile': profile}
     return render(request, 'accounts/company_profile_edit.html', context)

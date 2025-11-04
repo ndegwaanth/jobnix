@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentor Management - JobNix Admin</title>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+    <script src="{% static 'js/theme-switcher.js' %}"></script>
+</head>
+<body class="dashboard-admin" data-user-theme="{{ user.theme_preference|default:'light' }}">
+    <!-- Sidebar -->
+    <aside class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <img src="{% static 'icons/logo.png' %}" alt="JobNix Logo" style="width: 32px; height: 32px; margin-right: 8px; object-fit: contain;">
+                <span>Job<span class="accent">Nix</span> Admin</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'admin_panel:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin_panel:user_management' %}" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            <a href="{% url 'admin_panel:mentor_management' %}" class="nav-item active">
+                <i class="fas fa-user-tie"></i>
+                <span>Mentors</span>
+            </a>
+            <a href="{% url 'admin_panel:instructor_management' %}" class="nav-item">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>Instructors</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar admin-topbar">
+            <div class="topbar-left">
+                <h1>Mentor Management</h1>
+                <p>Approve, activate, and manage mentors</p>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Filters -->
+            <div class="dashboard-card admin-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-filter"></i> Filters</h2>
+                </div>
+                <form method="GET" class="form-grid">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select name="status" onchange="this.form.submit()">
+                            <option value="">All Statuses</option>
+                            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                            <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                            <option value="suspended" {% if status_filter == 'suspended' %}selected{% endif %}>Suspended</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Search</label>
+                        <input type="text" name="search" placeholder="Search mentors..." value="{{ search }}">
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Mentors List -->
+            <div class="dashboard-card admin-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-tie"></i> All Mentors</h2>
+                </div>
+                {% if mentors %}
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mentor</th>
+                                <th>Expertise</th>
+                                <th>Status</th>
+                                <th>Rating</th>
+                                <th>Mentees</th>
+                                <th>Requests</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mentor in mentors %}
+                            <tr>
+                                <td>
+                                    <strong>{{ mentor.user.get_full_name|default:mentor.user.username }}</strong>
+                                    <br>
+                                    <small style="color: var(--text-secondary);">
+                                        {% if mentor.current_position %}{{ mentor.current_position }}{% endif %}
+                                        {% if mentor.company %} at {{ mentor.company }}{% endif %}
+                                    </small>
+                                    <br>
+                                    <small style="color: var(--text-secondary); font-size: 0.75rem;">
+                                        {{ mentor.user.email }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <small>{{ mentor.expertise_areas|truncatewords:5 }}</small>
+                                </td>
+                                <td>
+                                    {% if mentor.status == 'active' %}
+                                    <span class="badge" style="background: var(--success); color: white;">
+                                        {% if mentor.is_verified %}<i class="fas fa-check-circle"></i> Verified{% else %}Active{% endif %}
+                                    </span>
+                                    {% elif mentor.status == 'pending' %}
+                                    <span class="badge" style="background: var(--warning); color: white;">Pending</span>
+                                    {% elif mentor.status == 'inactive' %}
+                                    <span class="badge" style="background: var(--text-secondary); color: white;">Inactive</span>
+                                    {% elif mentor.status == 'suspended' %}
+                                    <span class="badge" style="background: var(--error); color: white;">Suspended</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span style="color: var(--warning);">
+                                        <i class="fas fa-star"></i> {{ mentor.rating|floatformat:1 }}
+                                    </span>
+                                </td>
+                                <td>{{ mentor.active_mentees }}</td>
+                                <td>
+                                    <span style="color: var(--info);">{{ mentor.pending_requests }} pending</span>
+                                    <br>
+                                    <small style="color: var(--text-secondary);">{{ mentor.total_requests }} total</small>
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                        {% if mentor.status == 'pending' %}
+                                        <form method="POST" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="mentor_id" value="{{ mentor.id }}">
+                                            <input type="hidden" name="action" value="approve">
+                                            <button type="submit" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                                <i class="fas fa-check"></i> Approve
+                                            </button>
+                                        </form>
+                                        {% elif mentor.status == 'inactive' %}
+                                        <form method="POST" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="mentor_id" value="{{ mentor.id }}">
+                                            <input type="hidden" name="action" value="activate">
+                                            <button type="submit" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                                <i class="fas fa-play"></i> Activate
+                                            </button>
+                                        </form>
+                                        {% elif mentor.status == 'active' %}
+                                        <form method="POST" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="mentor_id" value="{{ mentor.id }}">
+                                            <input type="hidden" name="action" value="deactivate">
+                                            <button type="submit" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                                <i class="fas fa-pause"></i> Deactivate
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        {% if mentor.status == 'active' %}
+                                        <form method="POST" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="mentor_id" value="{{ mentor.id }}">
+                                            <input type="hidden" name="action" value="suspend">
+                                            <button type="submit" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: var(--warning);">
+                                                <i class="fas fa-ban"></i> Suspend
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this mentor? This action cannot be undone.');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="mentor_id" value="{{ mentor.id }}">
+                                            <input type="hidden" name="action" value="delete">
+                                            <button type="submit" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: var(--error);">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-user-tie"></i>
+                    <h3>No Mentors Found</h3>
+                    <p>No mentors match your search criteria</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

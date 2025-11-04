@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register as Mentor - JobNix</title>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'icons/logo.png' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <script src="{% static 'js/theme-switcher.js' %}"></script>
+</head>
+<body class="dashboard-employer" data-user-theme="{{ user.theme_preference|default:'light' }}">
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <img src="{% static 'icons/logo.png' %}" alt="JobNix Logo" style="width: 32px; height: 32px; margin-right: 8px; object-fit: contain;">
+                <span>Job<span class="accent">Nix</span></span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'mentors:mentor_register' %}" class="nav-item active">
+                <i class="fas fa-user-tie"></i>
+                <span>Register as Mentor</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'accounts:logout' %}" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Register as Mentor</h1>
+                <p>Share your expertise and guide the next generation</p>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card large">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-tie"></i> Mentor Registration</h2>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">
+                        Complete your mentor profile to start helping youth achieve their career goals
+                    </p>
+                </div>
+                
+                <form method="POST" class="notification-form">
+                    {% csrf_token %}
+                    <div class="form-section">
+                        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Professional Information</h3>
+                        
+                        <div class="form-group">
+                            <label>Bio / Professional Background *</label>
+                            <textarea name="bio" rows="6" required placeholder="Describe your professional background, expertise, and what makes you qualified as a mentor..."></textarea>
+                            <small style="color: var(--text-secondary);">This will be visible to potential mentees</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Areas of Expertise *</label>
+                            <input type="text" name="expertise_areas" required placeholder="e.g., Software Development, Business Strategy, Marketing, Data Science (comma-separated)">
+                            <small style="color: var(--text-secondary);">Separate multiple areas with commas</small>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Years of Experience *</label>
+                                <input type="number" name="years_of_experience" min="0" required value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Current Position</label>
+                                <input type="text" name="current_position" placeholder="e.g., Senior Software Engineer">
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Company / Organization</label>
+                                <input type="text" name="company" placeholder="e.g., Tech Corp Inc.">
+                            </div>
+                            <div class="form-group">
+                                <label>Industry</label>
+                                <input type="text" name="industry" placeholder="e.g., Technology, Finance, Healthcare">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section" style="margin-top: 2rem;">
+                        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Availability & Preferences</h3>
+                        
+                        <div class="form-group">
+                            <label>Languages Spoken</label>
+                            <input type="text" name="languages" value="English" placeholder="e.g., English, Spanish, French (comma-separated)">
+                            <small style="color: var(--text-secondary);">Languages you can communicate in</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Availability Hours</label>
+                            <input type="text" name="availability_hours" placeholder="e.g., Monday-Friday, 9am-5pm EST">
+                            <small style="color: var(--text-secondary);">When are you typically available for sessions?</small>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Maximum Mentees</label>
+                                <input type="number" name="max_mentees" min="1" max="50" value="10">
+                                <small style="color: var(--text-secondary);">How many mentees can you handle at once?</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Hourly Rate (USD)</label>
+                                <input type="number" name="hourly_rate" min="0" step="0.01" value="0.00">
+                                <small style="color: var(--text-secondary);">Set to 0 for free mentorship</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                        <button type="submit" class="btn-primary" style="width: 100%;">
+                            <i class="fas fa-paper-plane"></i> Submit Registration
+                        </button>
+                        <p style="text-align: center; color: var(--text-secondary); margin-top: 1rem; font-size: 0.875rem;">
+                            Your registration will be reviewed by our admin team. You'll be notified once approved.
+                        </p>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Info Card -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-info-circle"></i> Why Become a Mentor?</h2>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                            <i class="fas fa-check-circle" style="color: var(--success); margin-right: 0.5rem;"></i>
+                            <strong>Make a Difference:</strong> Help shape the careers of young professionals
+                        </li>
+                        <li style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                            <i class="fas fa-check-circle" style="color: var(--success); margin-right: 0.5rem;"></i>
+                            <strong>Build Your Network:</strong> Connect with motivated and talented individuals
+                        </li>
+                        <li style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                            <i class="fas fa-check-circle" style="color: var(--success); margin-right: 0.5rem;"></i>
+                            <strong>Share Knowledge:</strong> Pass on your expertise and experience
+                        </li>
+                        <li style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                            <i class="fas fa-check-circle" style="color: var(--success); margin-right: 0.5rem;"></i>
+                            <strong>Flexible Scheduling:</strong> Set your own availability and rates
+                        </li>
+                        <li style="padding: 0.75rem 0;">
+                            <i class="fas fa-check-circle" style="color: var(--success); margin-right: 0.5rem;"></i>
+                            <strong>AI Matching:</strong> Get matched with mentees who align with your expertise
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="{% static 'js/theme-switcher.js' %}"></script>
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
+

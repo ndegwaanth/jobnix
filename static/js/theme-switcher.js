@@ -79,20 +79,35 @@ function applyTheme(theme) {
 (function() {
     // Apply theme IMMEDIATELY (before DOM is ready) to prevent flash
     let savedTheme = 'light';
-    if (document.body && document.body.dataset.userTheme) {
+    
+    // Try to get theme from body data attribute first (server-side preference)
+    if (document.body && document.body.dataset && document.body.dataset.userTheme) {
         savedTheme = document.body.dataset.userTheme;
         localStorage.setItem('theme', savedTheme);
-        applyTheme(savedTheme);
     } else {
+        // Fallback to localStorage
         savedTheme = localStorage.getItem('theme') || 'light';
+    }
+    
+    // Apply theme immediately
+    if (document.body) {
         applyTheme(savedTheme);
     }
+    
+    // Also try to apply when body becomes available
+    const observer = new MutationObserver(function(mutations) {
+        if (document.body) {
+            applyTheme(savedTheme);
+            observer.disconnect();
+        }
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
 })();
 
 document.addEventListener('DOMContentLoaded', function() {
     // Re-apply theme after DOM loads (in case body wasn't available before)
     let savedTheme = 'light';
-    if (document.body.dataset.userTheme) {
+    if (document.body && document.body.dataset && document.body.dataset.userTheme) {
         savedTheme = document.body.dataset.userTheme;
         localStorage.setItem('theme', savedTheme);
     } else {
@@ -100,21 +115,43 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     applyTheme(savedTheme);
     
-    // Ensure theme persists across all page navigations
-    document.querySelectorAll('a[href], button[type="submit"], form').forEach(el => {
-        el.addEventListener('click', function(e) {
-            // Save current theme before navigation
-            const currentTheme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
-            localStorage.setItem('theme', currentTheme);
-        }, true); // Use capture phase to ensure it runs before navigation
-    });
+    // Ensure theme persists across all page navigations - use more aggressive approach
+    function saveThemeBeforeNavigation() {
+        const currentTheme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+        localStorage.setItem('theme', currentTheme);
+    }
     
-    // Also intercept form submissions
-    document.querySelectorAll('form').forEach(form => {
-        form.addEventListener('submit', function(e) {
+    // Intercept all link clicks
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a[href]');
+        if (link && link.href && !link.href.startsWith('javascript:') && !link.href.startsWith('#')) {
+            saveThemeBeforeNavigation();
+        }
+    }, true);
+    
+    // Intercept all form submissions
+    document.addEventListener('submit', function(e) {
+        saveThemeBeforeNavigation();
+    }, true);
+    
+    // Intercept all button clicks that might cause navigation
+    document.addEventListener('click', function(e) {
+        const button = e.target.closest('button[type="submit"]');
+        if (button) {
+            saveThemeBeforeNavigation();
+        }
+    }, true);
+    
+    // Also save theme periodically (every 2 seconds) as a backup
+    setInterval(function() {
+        if (document.body) {
             const currentTheme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
-            localStorage.setItem('theme', currentTheme);
-        });
-    });
+            const saved = localStorage.getItem('theme');
+            if (currentTheme !== saved) {
+                localStorage.setItem('theme', currentTheme);
+            }
+        }
+    }, 2000);
 });
+
 
