@@ -219,7 +219,7 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Frontend URL for email links
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:8000')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://jobnix.onrender.com')
 
 # Admin User Credentials from .env
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', '')
