@@ -102,7 +102,7 @@ DATABASES = {
 }
 
 import dj_database_url
-DATABASES['default'] = dj_database_url.parse("postgresql://test_postgree_render_user:MSujlG76gY5Kxb6DTOyVt1if3HWu0Nuz@dpg-d46taka4d50c7393u3ag-a.oregon-postgres.render.com/test_postgree_render"
+DATABASES['default'] = dj_database_url.parse("postgresql://test_postgree_render_user:MSujlG76gY5Kxb6DTOyVt1if3HWu0Nuz@dpg-d46taka4d50c7393u3ag-a.oregon-postgres.render.com/test_postgree_render")
 
 # Fallback to SQLite if MySQL drivers are not available
 # try:
