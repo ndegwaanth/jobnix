@@ -30,8 +30,21 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-7#6-^h*g2kh5d43d5^4-f5ge++
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-ALLOWED_HOSTS = ['.vercel.app', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.vercel.app',
+    '.ngrok-free.app',
+    '.ngrok-free.dev',
+    'trivially-civilizatory-kiyoko.ngrok-free.dev',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.ngrok-free.app',
+    'https://*.ngrok-free.dev',
+]
+
+
 
 # Application definition
 
