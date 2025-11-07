@@ -56,6 +56,10 @@ DB_PASSWORD=sucess
 DB_HOST=localhost
 DB_PORT=3306
 ```
+```bash
+installing psycopg2
+pip install psycopg2-binary
+```
 
 ### 5. Run Migrations
 

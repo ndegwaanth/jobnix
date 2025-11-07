@@ -30,6 +30,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-7#6-^h*g2kh5d43d5^4-f5ge++
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
+
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
@@ -37,6 +38,7 @@ ALLOWED_HOSTS = [
     '.ngrok-free.app',
     '.ngrok-free.dev',
     'trivially-civilizatory-kiyoko.ngrok-free.dev',
+    'jobnix.onrender.com'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -44,6 +46,9 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.ngrok-free.dev',
 ]
 
+
+# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# ALLOWED_HOSTS = ['.vercel.app', 'localhost', '127.0.0.1','jobnix.onrender.com']
 
 
 # Application definition
@@ -74,6 +79,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'jobnix.urls'
@@ -114,7 +120,9 @@ DATABASES = {
     }
 }
 
+import dj_database_url
 
+DATABASES['default'] = dj_database_url.parse(os.getenv("DATABASE_URL", ""))
 
 # Fallback to SQLite if MySQL drivers are not available
 # try:
@@ -175,10 +183,14 @@ ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'Sucess@123')
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+# STATIC_URL = 'static/'
+# STATICFILES_DIRS = [BASE_DIR / 'static']
+# STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # where collectstatic will store them
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')] 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
