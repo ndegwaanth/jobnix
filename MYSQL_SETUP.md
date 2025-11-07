@@ -127,3 +127,4 @@ ALTER DATABASE jobnix CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 - Strict SQL mode for data integrity
 - Automatic fallback to SQLite if MySQL is unavailable
 
+# setting SMTP
