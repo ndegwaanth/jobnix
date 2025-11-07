@@ -100,26 +100,41 @@ WSGI_APPLICATION = 'jobnix.wsgi.application'
 #  DATABASE CONFIGURATION
 # ==============================
 
-DATABASES = {
-    'default': dj_database_url.parse(
-        os.getenv("DATABASE_URL", ""),
-        conn_max_age=600,
-        ssl_require=False
-    )
-}
+# ==============================
+#  DATABASE CONFIGURATION
+# ==============================
 
-# Fallback for local dev
-if not DATABASES['default']:
+# Use PostgreSQL from Render (production)
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+else:
+    # Fallback for local development (you can use SQLite for simplicity)
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.getenv("DB_NAME", "jobnix"),
-            'USER': os.getenv("DB_USER", "jobnix"),
-            'PASSWORD': os.getenv("DB_PASSWORD", "success"),
-            'HOST': os.getenv("DB_HOST", "localhost"),
-            'PORT': os.getenv("DB_PORT", "3306"),
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
+# Fallback for local dev
+# if not DATABASES['default']:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.mysql',
+#             'NAME': os.getenv("DB_NAME", "jobnix"),
+#             'USER': os.getenv("DB_USER", "jobnix"),
+#             'PASSWORD': os.getenv("DB_PASSWORD", "success"),
+#             'HOST': os.getenv("DB_HOST", "localhost"),
+#             'PORT': os.getenv("DB_PORT", "3306"),
+#         }
+#     }
 
 
 # ==============================
@@ -167,25 +182,33 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # ==============================
-#  EMAIL CONFIGURATION (Resend)
+#  EMAIL CONFIGURATION (Resend API + Fallbacks)
 # ==============================
 
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.resend.com')
+# Default to console backend for safety
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Resend API Configuration
+RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'JobNix <onboarding@resend.dev>')
+
+# Only use SMTP if explicitly configured for Gmail/other provider
+EMAIL_HOST = os.getenv('EMAIL_HOST', '')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = 'resend'  # Resend doesn’t require a real username
-EMAIL_HOST_PASSWORD = os.getenv('RESEND_API_KEY', '')  # Use API key as password
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@jobnix.com')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 
-# Fallback to console backend if API key not set
-if not EMAIL_HOST_PASSWORD:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    print("\n" + "="*60)
-    print("⚠️  RESEND_API_KEY not set in .env file")
-    print("⚠️  Using console backend - emails will be printed to console")
-    print("⚠️  To enable real emails, add RESEND_API_KEY to .env")
-    print("="*60 + "\n")
+# If Gmail SMTP credentials are provided, use SMTP backend
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD and EMAIL_HOST:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    print(f"✅ Using SMTP backend with {EMAIL_HOST}")
+elif RESEND_API_KEY:
+    # We have Resend API key, but we'll handle it in utils.py
+    print("✅ Resend API key found - API-based email sending enabled")
+else:
+    print("⚠️  Using console email backend - emails will be printed to logs")
+    print("⚠️  To enable real emails, add RESEND_API_KEY or SMTP credentials to .env")
 
 
 # ==============================

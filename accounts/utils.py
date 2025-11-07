@@ -15,7 +15,7 @@ import resend
 logger = logging.getLogger(__name__)
 
 def send_verification_email(user, email):
-    """Send email verification code to user with Gmail SMTP or Resend fallback"""
+    """Send email verification code to user with Resend API or fallback"""
     # Generate verification code
     code = EmailVerification.generate_code()
 
@@ -43,6 +43,7 @@ def send_verification_email(user, email):
 
     # Email content
     subject = 'JobNix - Verify Your Email Address'
+    
     plain_message = f"""
 Hello {user.first_name or user.username},
 
@@ -67,43 +68,43 @@ The JobNix Team
         'expires_hours': 24,
     })
 
-    # Try Gmail (SMTP)
+    # Try Resend API if available
+    if hasattr(settings, "RESEND_API_KEY") and settings.RESEND_API_KEY:
+        try:
+            import resend
+            resend.api_key = settings.RESEND_API_KEY
+            
+            params = {
+                "from": settings.DEFAULT_FROM_EMAIL,
+                "to": [email],
+                "subject": subject,
+                "html": html_message,
+                "text": plain_message.strip(),
+            }
+            
+            result = resend.Emails.send(params)
+            logger.info(f"✅ Verification email sent to {email} via Resend API")
+            return verification
+        except Exception as api_err:
+            logger.error(f"❌ Resend API failed: {api_err}")
+            # Fall through to console backend
+
+    # Fallback to configured email backend (console in your case)
     try:
-        email_msg = EmailMultiAlternatives(
+        send_mail(
             subject,
             plain_message.strip(),
             settings.DEFAULT_FROM_EMAIL,
             [email],
+            html_message=html_message,
+            fail_silently=False,
         )
-        email_msg.attach_alternative(html_message, "text/html")
-        email_msg.send(fail_silently=False)
-        logger.info(f"✅ Verification email sent to {email} via Gmail SMTP")
-        return verification
-
+        logger.info(f"✅ Verification code for {email}: {code}")
     except Exception as e:
-        logger.warning(f"⚠️ Gmail SMTP failed: {e}")
+        logger.error(f"❌ Email sending failed: {e}")
+        logger.info(f"Verification code for {email}: {code}")
 
-        # --- Fallback to Resend (API-based, works on Render) ---
-        try:
-            if hasattr(settings, "RESEND_API_KEY") and settings.RESEND_API_KEY:
-                resend.api_key = settings.RESEND_API_KEY
-                resend.Emails.send({
-                    "from": settings.DEFAULT_FROM_EMAIL,
-                    "to": [email],
-                    "subject": subject,
-                    "html": html_message,
-                    "text": plain_message,
-                })
-                logger.info(f"✅ Verification email sent to {email} via Resend API")
-            else:
-                logger.error("❌ RESEND_API_KEY not found in environment. Using console/log fallback.")
-                logger.info(f"Verification code for {email}: {code}")
-        except Exception as api_err:
-            logger.error(f"❌ Resend API failed: {api_err}")
-            logger.info(f"Verification code for {email}: {code}")
-
-        # Always return verification so user can see code on page
-        return verification
+    return verification
 
 
 
